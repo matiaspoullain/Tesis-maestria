@@ -33,17 +33,32 @@ no2[, c("periodo", "dia_semana") := .(fifelse(Fecha_datetime < as.Date("2020-03-
                                         factor(levels = c("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")))]
 
 
-(plot.variacion.semanal <- no2[, .(NO2_trop_mean = mean(NO2_trop_mean, na.rm = TRUE),
-                                   NO2_trop_std = sd(NO2_trop_mean, na.rm = TRUE)), by = .(dia_semana, periodo)] %>%
+(plot.variacion.semanal <- no2[, .(NO2_trop_medio = mean(NO2_trop_mean, na.rm = TRUE),
+                                   NO2_trop_sd = sd(NO2_trop_mean, na.rm = TRUE)), by = .(dia_semana, periodo)] %>%
     ggplot(aes(x = as.numeric(dia_semana), y = NO2_trop_medio))+
     geom_ribbon(aes(ymin = NO2_trop_medio - NO2_trop_sd, ymax = NO2_trop_medio + NO2_trop_sd, fill = periodo), alpha = 0.3) +
     geom_line(aes(col = periodo))+
-    scale_x_continuous(breaks = 1:7, labels = levels(vehiculos$dia_semana), minor_breaks = NULL) +
+    scale_x_continuous(breaks = 1:7, labels = levels(no2$dia_semana), minor_breaks = NULL) +
     scale_fill_brewer(palette = "Dark2") +
     scale_color_brewer(palette = "Dark2") +
     theme_bw()+
     theme(legend.position = "top") +
     labs(x = "Día de la semana", y = "Cantidad de vehículos contados por hora", fill = "Período", col = "Período"))
+
+
+(plot.variacion.semanal.cuantil <- no2[, .(NO2_trop_medio = median(NO2_trop_mean, na.rm = TRUE),
+                                   NO2_trop_2.5 = quantile(NO2_trop_mean, 0.025, na.rm = TRUE),
+                                   NO2_trop_97.5 = quantile(NO2_trop_mean, 0.975, na.rm = TRUE)), by = .(dia_semana, periodo)] %>%
+    ggplot(aes(x = as.numeric(dia_semana), y = NO2_trop_medio))+
+    geom_ribbon(aes(ymin = NO2_trop_2.5, ymax = NO2_trop_97.5, fill = periodo), alpha = 0.3) +
+    geom_line(aes(col = periodo))+
+    scale_x_continuous(breaks = 1:7, labels = levels(no2$dia_semana), minor_breaks = NULL) +
+    scale_fill_brewer(palette = "Dark2") +
+    scale_color_brewer(palette = "Dark2") +
+    theme_bw()+
+    theme(legend.position = "top") +
+    labs(x = "Día de la semana", y = "Cantidad de vehículos contados por hora", fill = "Período", col = "Período"))
+
 
 
 (boxplot.semanal <- no2 %>%
@@ -56,4 +71,79 @@ no2[, c("periodo", "dia_semana") := .(fifelse(Fecha_datetime < as.Date("2020-03-
 
 
 ggsave("Figuras/Descriptiva/Boxplot_semanal_NO2.png", boxplot.semanal, width = 10, height = 6)
+
+
+## Autocorrelogramas:
+library(ggfortify)
+#Diaria
+
+autocorrelacion.diaria <- acf(no2$NO2_trop_mean, lag.max = 500, pl=FALSE, na.action = na.pass)
+
+intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.diaria, ci.type = 'ma')
+
+(plot.acf.diaria <- data.table(Autocorrelación = autocorrelacion.diaria$acf,
+                               Lag = autocorrelacion.diaria$lag,
+                               intervalo = intervalo.confianza) %>%
+    ggplot(aes(x = Lag, y = Autocorrelación)) +
+    geom_ribbon(aes(ymin = -intervalo, ymax = intervalo), alpha = 0.3, fill = palette.colors(1, "Dark2")) +
+    geom_segment(aes(xend = Lag, y = 0, yend = Autocorrelación)) +
+    geom_point(col = palette.colors(1, "Dark2")) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    theme_bw()+
+    labs(x = "Lag (Días)"))
+
+ggsave("Figuras/Descriptiva/Autocorrelograma_no2_diaria.png", plot.acf.diaria, width = 8, height = 4)
+
+
+#Semanal
+
+no2[, semana := floor((0:(.N-1))/7)]
+
+no2.semana <- no2[, .(NO2_trop_mean = mean(NO2_trop_mean, na.rm = TRUE)), by = semana]
+
+autocorrelacion.semanal <- acf(no2.semana$NO2_trop_mean, lag.max = 150, pl=FALSE, na.action = na.pass)
+
+intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.semanal, ci.type = 'ma')
+
+(plot.acf.semanal <- data.table(Autocorrelación = autocorrelacion.semanal$acf,
+                               Lag = autocorrelacion.semanal$lag,
+                               intervalo = intervalo.confianza) %>%
+    ggplot(aes(x = Lag, y = Autocorrelación)) +
+    geom_ribbon(aes(ymin = -intervalo, ymax = intervalo), alpha = 0.3, fill = palette.colors(1, "Dark2")) +
+    geom_segment(aes(xend = Lag, y = 0, yend = Autocorrelación)) +
+    geom_point(col = palette.colors(1, "Dark2")) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    theme_bw() +
+    labs(x = "Lag (Semanas)") +
+    scale_x_continuous(breaks = seq(0, 150, 10)))
+
+ggsave("Figuras/Descriptiva/Autocorrelograma_no2_semanal.png", plot.acf.semanal, width = 8, height = 4)
+
+
+
+#### Variables meteorologicas ####
+tiempo <- fread("Datos/Crudos/datos_meteorologicos.csv")[ESTACION == 87585]
+
+# tiempo[, fecha_hora := paste0(as.character(FECHA)," ", str_pad(`HORA LOCAL`, 2, pad = "0"), ":00:00") %>%
+#          as.POSIXct]
+
+tiempo.diario <- tiempo[, .(temperatura = mean(TEMPERATURA, na.rm = TRUE),
+                            temperatura.max = max(TEMPERATURA, na.rm = TRUE),
+                            temperatura.min = min(TEMPERATURA, na.rm = TRUE),
+                            pp = as.numeric(sum(PP, na.rm = TRUE) > 0)), by = FECHA]
+
+(plot.tiempo <- tiempo.diario %>%
+  mutate(etiqueta = "Ocurrencia de precipitaciones") %>%
+  ggplot(aes(x = FECHA, y = temperatura, ymin = temperatura.min, ymax = temperatura.max)) +
+  geom_ribbon(alpha = 0.5, fill = palette.colors(2, "Dark2")[2]) +
+  geom_line(col = palette.colors(2, "Dark2")[2]) +
+  geom_vline(aes(xintercept = ifelse(pp == 1, FECHA, NA), col = etiqueta), alpha = 0.5, na.rm = TRUE) +
+  scale_fill_brewer(palette = "Dark2") +
+  scale_color_manual(values = palette.colors(3, "Dark2")[3]) +
+  labs(x = "Fecha", y = "Temperatura (°C)", col = "") +
+  theme_bw()+
+  theme(legend.position = "top"))
+  
+
+ggsave("Figuras/Descriptiva/Tiempo_diario.png", plot.tiempo, width = 10, height = 6)
 

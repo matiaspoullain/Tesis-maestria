@@ -141,3 +141,44 @@ vehiculos %>%
   facet_grid(hora~condicion_dia)
 
 
+#### Autocorrelogramas ####
+#Horario
+library(ggfortify)
+
+autocorrelacion.horaria <- acf(vehiculos$cantidad_pasos, lag.max = 200, pl=FALSE)
+
+intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.horaria, ci.type = 'ma')
+
+(plot.acf.horaria <- data.table(Autocorrelación = autocorrelacion.horaria$acf,
+                                Lag = autocorrelacion.horaria$lag,
+                                intervalo = intervalo.confianza) %>%
+                       ggplot(aes(x = Lag, y = Autocorrelación)) +
+                       geom_ribbon(aes(ymin = -intervalo, ymax = intervalo), alpha = 0.3, fill = palette.colors(1, "Dark2")) +
+                       geom_segment(aes(xend = Lag, y = 0, yend = Autocorrelación)) +
+                       geom_point(col = palette.colors(1, "Dark2")) +
+                       geom_hline(yintercept = 0, linetype = "dashed") +
+                       theme_bw()+
+                       labs(x = "Lag (Horas)"))
+
+ggsave("Figuras/Descriptiva/Autocorrelograma_vehiculos_horaria.png", plot.acf.horaria, width = 8, height = 4)
+
+
+#Diario
+library(ggfortify)
+
+vehiculos.diarios <- vehiculos[fecha_hora < as.Date("2020-03-20"), .(cantidad_pasos = sum(cantidad_pasos, na.rm = TRUE)), by = .(fecha = (as.Date(fecha_hora)))]
+
+autocorrelacion.diaria <- acf(vehiculos.diarios$cantidad_pasos, lag.max = 500, pl=FALSE)
+
+intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.diaria, ci.type = 'ma')
+
+(plot.acf.diaria <- data.table(Autocorrelación = autocorrelacion.diaria$acf,
+                                Lag = autocorrelacion.diaria$lag,
+                                intervalo = intervalo.confianza) %>%
+                       ggplot(aes(x = Lag, y = Autocorrelación)) +
+                       geom_ribbon(aes(ymin = -intervalo, ymax = intervalo), alpha = 0.3, fill = palette.colors(1, "Dark2")) +
+                       geom_segment(aes(xend = Lag, y = 0, yend = Autocorrelación)) +
+                       geom_point(col = palette.colors(1, "Dark2")) +
+                       geom_hline(yintercept = 0, linetype = "dashed") +
+                       theme_bw()+
+                       labs(x = "Lag (Días)"))
