@@ -28,3 +28,9 @@ datos[, temperatura := gsub(",", ".", `TEMPERATURA (§C)`, fixed = TRUE) %>%
 codigos_pp <- c(20:27, 29, 31, 50:69, 80:98)
 
 datos[, pp := fifelse(`TIEMPO PRESENTE` %in% codigos_pp, 1, 0)]
+
+#Me quedo solo con temperatura y pp
+datos <- datos[, .(fecha_hora, temperatura, pp)]
+
+#Lo guardo
+fwrite(datos, "Datos/Procesados/datos_tiempo_procesados.csv")

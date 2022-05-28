@@ -8,12 +8,12 @@ library(scales)
 
 #### NO2 ####
 
-no2 <- fread("Datos/Buenos Aires_NO2trop_diario.csv")
+no2 <- fread("Datos/Procesados/no2_diario_procesado.csv")
 
 # Grafico crudo:
 
 (plot.no2 <- no2 %>%
-  ggplot(aes(x = Fecha_datetime, y = NO2_trop_mean, ymin = NO2_trop_mean -NO2_trop_std, ymax = NO2_trop_mean + NO2_trop_std)) +
+  ggplot(aes(x = fecha, y = NO2_trop_mean, ymin = NO2_trop_mean -NO2_trop_std, ymax = NO2_trop_mean + NO2_trop_std)) +
   geom_ribbon(alpha = .5, fill = palette.colors(2, "Dark2")[2]) +
   geom_line(col = palette.colors(2, "Dark2")[2]) +
     scale_x_date(breaks = date_breaks("4 month")) +
@@ -25,10 +25,10 @@ ggsave("Figuras/Descriptiva/Linea_NO2.png", plot.no2, width = 12, height = 6)
 
 
 # Variacion semanal segun periodo:
-no2[, c("periodo", "dia_semana") := .(fifelse(Fecha_datetime < as.Date("2020-03-20"), "Previo a restricciones", "Durante las restricciones") %>%
+no2[, c("periodo", "dia_semana") := .(fifelse(fecha < as.Date("2020-03-20"), "Previo a restricciones", "Durante las restricciones") %>%
                                         as.factor() %>%
                                         fct_rev(),
-                                      weekdays(Fecha_datetime) %>%
+                                      weekdays(fecha) %>%
                                         str_to_title() %>%
                                         factor(levels = c("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")))]
 
@@ -122,25 +122,23 @@ ggsave("Figuras/Descriptiva/Autocorrelograma_no2_semanal.png", plot.acf.semanal,
 
 
 #### Variables meteorologicas ####
-tiempo <- fread("Datos/Crudos/datos_meteorologicos.csv")[ESTACION == 87585]
+tiempo <- fread("Datos/Procesados/datos_tiempo_procesados.csv")
 
-# tiempo[, fecha_hora := paste0(as.character(FECHA)," ", str_pad(`HORA LOCAL`, 2, pad = "0"), ":00:00") %>%
-#          as.POSIXct]
 
-tiempo.diario <- tiempo[, .(temperatura = mean(TEMPERATURA, na.rm = TRUE),
-                            temperatura.max = max(TEMPERATURA, na.rm = TRUE),
-                            temperatura.min = min(TEMPERATURA, na.rm = TRUE),
-                            pp = as.numeric(sum(PP, na.rm = TRUE) > 0)), by = FECHA]
+tiempo.diario <- tiempo[between(fecha_hora, as.Date("2019-01-01"), as.Date("2021-01-01")), .(temperatura = mean(temperatura, na.rm = TRUE),
+                            temperatura.max = max(temperatura, na.rm = TRUE),
+                            temperatura.min = min(temperatura, na.rm = TRUE),
+                            pp = as.numeric(sum(pp, na.rm = TRUE) > 0)), by = .(fecha = as.Date(fecha_hora))]
 
 (plot.tiempo <- tiempo.diario %>%
   mutate(etiqueta = "Ocurrencia de precipitaciones") %>%
-  ggplot(aes(x = FECHA, y = temperatura, ymin = temperatura.min, ymax = temperatura.max)) +
+  ggplot(aes(x = fecha, y = temperatura, ymin = temperatura.min, ymax = temperatura.max)) +
   geom_ribbon(alpha = 0.5, fill = palette.colors(2, "Dark2")[2]) +
   geom_line(col = palette.colors(2, "Dark2")[2]) +
-  geom_vline(aes(xintercept = ifelse(pp == 1, FECHA, NA), col = etiqueta), alpha = 0.5, na.rm = TRUE) +
+  geom_vline(aes(xintercept = ifelse(pp == 1, fecha, NA), col = etiqueta), alpha = 0.5, na.rm = TRUE) +
   scale_fill_brewer(palette = "Dark2") +
   scale_color_manual(values = palette.colors(3, "Dark2")[3]) +
-  labs(x = "Fecha", y = "Temperatura (°C)", col = "") +
+  labs(x = "Fecha", y = "temperatura (°C)", col = "") +
   theme_bw()+
   theme(legend.position = "top"))
   
