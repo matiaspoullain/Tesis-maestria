@@ -145,3 +145,16 @@ tiempo.diario <- tiempo[between(fecha_hora, as.Date("2019-01-01"), as.Date("2021
 
 ggsave("Figuras/Descriptiva/Tiempo_diario.png", plot.tiempo, width = 10, height = 6)
 
+# días seguidos con y sin lluvias:
+
+sequence(rle(as.character(tiempo.diario$pp))$lengths)
+
+tiempo.diario[, contador := rleid(pp)]
+
+contador <- tiempo.diario[, .N, by = .(pp, contador)]
+
+contador[pp == 0, N] %>%
+  mean
+
+contador[pp == 1, N] %>%
+  mean

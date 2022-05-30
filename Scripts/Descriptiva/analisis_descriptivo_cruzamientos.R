@@ -216,3 +216,109 @@ ggsave("Figuras/Descriptiva/Heatmap_vehiculos_temperatura_no2.png", heatmap.vehi
 # tests contra no2:
 cor.test(vehiculos.tiempo.no2$cantidad_pasos, vehiculos.tiempo.no2$NO2_trop_mean, method = "spearman")
 cor.test(vehiculos.tiempo.no2$temperatura, vehiculos.tiempo.no2$NO2_trop_mean, method = "spearman")
+
+
+#Creo lags y otras funciones y busco las correlaciones de spearman:
+
+funciones <- c("sqrt", "log10")
+
+variables.originales <- c("NO2_trop_mean", "cantidad_pasos", "temperatura")
+
+for(funcion in funciones){
+  nuevas.variables <- paste(funcion, variables.originales, sep = "_")
+  if(funcion == "sqrt"){
+    vehiculos.tiempo.no2[, (nuevas.variables) :=  sqrt(.SD), .SDcols=variables.originales]
+  }
+  else if(funcion == "log10"){
++    vehiculos.tiempo.no2[, (nuevas.variables) :=  log10(.SD), .SDcols=variables.originales]
+  }
+}
+
+
+lags <- str_pad(0:30, width = 2, pad = "0")
+variables <- names(vehiculos.tiempo.no2)[grepl(paste(variables.originales[-1], collapse = "|"), names(vehiculos.tiempo.no2))]
+
+for(lag in lags){
+  nuevas.variables <- paste(variables, lag, sep = "_")
+  vehiculos.tiempo.no2[, (nuevas.variables) :=  shift(.SD, as.numeric(lag)), .SDcols=variables]
+}
+
+variables.correlaciones <- names(vehiculos.tiempo.no2)[
+  grepl(
+    paste(paste0(c("NO2_trop_mean", variables), "_")
+          , collapse = "|"),
+    names(vehiculos.tiempo.no2)
+  )
+]
+
+
+conversiones.no2 <- names(vehiculos.tiempo.no2)[grepl("NO2_trop_mean", names(vehiculos.tiempo.no2))]
+
+dt.correlaciones <- data.table()
+
+for(i in conversiones.no2){
+  
+  variables.correlaciones2 <- c(i, variables.correlaciones)
+  
+  vehiculos.tiempo.no2.correlaciones <- vehiculos.tiempo.no2[, ..variables.correlaciones2]
+  
+  correlaciones.no2 <- cor(vehiculos.tiempo.no2.correlaciones, method="p", use = "pairwise.complete.obs")[1,]
+  
+  correlaciones.no2 <- data.table(variable = names(correlaciones.no2),
+                                  spearman = correlaciones.no2)
+  
+  correlaciones.no2 <- correlaciones.no2[!grepl("NO2_trop_mean", variable)]
+  
+  correlaciones.no2[, target := ..i]
+  
+  dt.correlaciones <- dt.correlaciones %>%
+    rbind(correlaciones.no2)
+}
+
+
+
+dt.correlaciones[, lag := substr(variable, nchar(variable)-1, nchar(variable))
+                  %>% as.numeric]
+
+dt.correlaciones[, variable := substr(variable, 1, nchar(variable)-3)]
+
+dt.correlaciones[, conversion := fcase(grepl("sqrt", variable), "Raíz cuadrada",
+                                        grepl("log10", variable), "Logaritmo base 10",
+                                        default = "Identidad")]
+
+dt.correlaciones[, variable := gsub(paste(paste0(funciones, "_"), collapse = "|"), "", variable)]
+
+dt.correlaciones[, variable := fcase(variable == "cantidad_pasos", "Conteo vehicular diario",
+                                      variable == "temperatura", "Temperatura media diaria")]
+
+
+etiquetas.grid <- list(
+  "NO2_trop_mean" = expression(NO[2]),
+  "log10_NO2_trop_mean" = expression(paste(Log[10], (NO[2]))),
+  "sqrt_NO2_trop_mean" = expression(sqrt(NO[2]))
+)
+
+for(i in unique(dt.correlaciones$variable)){
+  etiquetas.grid[i] <- i
+}
+
+etiquetadora <- function(variable, value){
+  return(etiquetas.grid[value])
+}
+
+(plot.correlaciones <- dt.correlaciones %>%
+                         ggplot(aes(x = lag, y = spearman, col = conversion)) +
+                         geom_line() +
+                         geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.75) +
+                         facet_grid(variable~target, scales = "free", labeller = etiquetadora)+
+                         scale_color_brewer(palette = "Dark2") +
+                         theme_bw()+
+                         theme(legend.position = "top") +
+                         labs(x = "Lag (días)", y = "Correlación de Pearson", col = "Conversión"))
+
+ggsave("Figuras/Descriptiva/correlaciones_no2.png", plot.correlaciones, width = 9, height = 9)
+
+
+dt.correlaciones[variable == "Conteo vehicular diario",][abs(spearman) == max(abs(spearman)),]
+
+dt.correlaciones[variable == "Temperatura media diaria",][abs(spearman) == max(abs(spearman)),]
