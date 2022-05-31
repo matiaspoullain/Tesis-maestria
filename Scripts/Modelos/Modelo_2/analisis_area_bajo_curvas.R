@@ -38,7 +38,7 @@ datos.juntos[, ]
 
 (plot.areas <- datos.juntos %>%
   ggplot(aes(x = ds, y = valor_central, ymax = incertidumbre_max, ymin = incertidumbre_min, col = variable, fill = variable)) +
-  geom_ribbon(alpha = 0.3) +
+  geom_ribbon(alpha = 0.3, col = NA) +
   geom_line() +
   geom_vline(xintercept = as.Date("2020-03-20"), linetype = "dashed") +
   scale_color_brewer(palette = "Dark2") +
