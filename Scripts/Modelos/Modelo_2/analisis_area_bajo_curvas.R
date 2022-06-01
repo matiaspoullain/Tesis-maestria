@@ -81,6 +81,12 @@ datos.proporciones[, periodo := factor(periodo, levels = unique(periodo))]
   scale_fill_brewer(palette = "Dark2") +
   theme_bw() +
   theme(legend.position = "top", axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.margin = unit(c(0,0,0,1), "cm")) +
-  labs(x = "Intervalo de tiempo", y = "Proporción", fill = "Tipo de período"))
+  labs(x = "Intervalo de tiempo", y = expression(Q == frac(Área(NO[2]~R), Área(NO[2]~SR))), fill = "Tipo de período"))
 
 ggsave("Figuras/Modelo_2/Proporciones_area_bajo_curva_predicciones.png", plot.proporciones, width = 10, height = 6)
+
+datos.proporciones[3:16, prop] %>%
+  range
+
+datos.proporciones[17:dim(datos.proporciones)[1], prop] %>%
+  range
