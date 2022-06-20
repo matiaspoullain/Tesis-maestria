@@ -90,3 +90,7 @@ datos.proporciones[3:16, prop] %>%
 
 datos.proporciones[17:dim(datos.proporciones)[1], prop] %>%
   range
+
+datos.proporciones %>%
+  filter(grepl("2020", periodo)) %>%
+  arrange(desc(prop))
