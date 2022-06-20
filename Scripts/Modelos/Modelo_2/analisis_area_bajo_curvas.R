@@ -5,7 +5,7 @@ library(pracma)
 
 datos <- fread("Datos/Resultados_prophet/Modelo_2/resultados_modelo_2_unidades_reales.csv")
 
-
+datos <- datos[ds < as.Date("2020-11-29")]
 
 #Media movil:
 variables <- names(datos)[grepl("prediccion", names(datos))]
