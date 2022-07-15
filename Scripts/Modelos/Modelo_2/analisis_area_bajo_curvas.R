@@ -5,7 +5,7 @@ library(pracma)
 
 datos <- fread("Datos/Resultados_prophet/Modelo_2/resultados_modelo_2_unidades_reales.csv")
 
-
+datos <- datos[ds < as.Date("2020-11-29")]
 
 #Media movil:
 variables <- names(datos)[grepl("prediccion", names(datos))]
@@ -90,3 +90,7 @@ datos.proporciones[3:16, prop] %>%
 
 datos.proporciones[17:dim(datos.proporciones)[1], prop] %>%
   range
+
+datos.proporciones %>%
+  filter(grepl("2020", periodo)) %>%
+  arrange(desc(prop))
