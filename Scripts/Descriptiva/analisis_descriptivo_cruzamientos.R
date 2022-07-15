@@ -201,14 +201,21 @@ vehiculos.tiempo.no2.heatmap <- grilla.vacia %>%
 
 num.ticks <- 9
 
+leyenda <- expression(
+  atop(
+    "Columna promedio de", paste(NO[2], " troposférico (", mu, "mol.", m^-2, ")")
+  )
+)
+
 (heatmap.vehiculos.temperatura.no2 <- vehiculos.tiempo.no2.heatmap %>%
   ggplot(aes(x = temperatura, y = cantidad_pasos, fill = frecuencia)) +
   geom_tile() +
-  scale_fill_viridis_c(n.breaks = 10) +
+  ggthemes::scale_fill_gradient2_tableau(palette = "Red-Green-Gold Diverging", trans = "reverse",n.breaks = 10, labels = scales::scientific) +
   # scale_x_continuous(breaks = seq(1, cantidad.pixeles, length.out = num.ticks), labels = round(seq(range(vehiculos.tiempo.no2$temperatura)[1], range(vehiculos.tiempo.no2$temperatura)[2], length.out = num.ticks))) +
   # scale_y_continuous(breaks = seq(1, cantidad.pixeles, length.out = num.ticks), labels = round(seq(range(vehiculos.tiempo.no2$cantidad_pasos)[1], range(vehiculos.tiempo.no2$cantidad_pasos)[2], length.out = num.ticks))) +
-  labs(x = "Intervalos de temperatura media diaria (°C)", y = "Intervalos de cantidad de vehículos contados por día", fill = expression(paste("[", NO[2], " troposférico] (", mu, "mol.", m^-2, ")"))) +
+  labs(x = "Intervalos de temperatura media diaria (°C)", y = "Intervalos de cantidad de vehículos contados por día", fill = leyenda) +
   theme_bw() +
+    guides(fill = guide_colorbar(reverse=T)) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)))
 
 ggsave("Figuras/Descriptiva/Heatmap_vehiculos_temperatura_no2.png", heatmap.vehiculos.temperatura.no2, width = 10, height = 6)
