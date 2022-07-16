@@ -14,4 +14,4 @@ plot.validacion <- datos %>%
   theme_bw() +
   labs(x = "Observados (vehículos/hora)", y = "Predichos (vehículos/hora)")
 
-ggsave("Figuras/Modelo_1/Validacion_2.png", width = 10, height = 6)
+ggsave("Figuras/Modelo_1/Validacion_m1.png", width = 10, height = 6)

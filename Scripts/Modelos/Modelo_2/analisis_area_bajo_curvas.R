@@ -40,11 +40,16 @@ datos.juntos <- merge(datos.centrales, datos.incertidumbre, by = c("ds", "variab
   geom_ribbon(alpha = 0.3, col = NA) +
   geom_line() +
   geom_vline(xintercept = as.Date("2020-03-20"), linetype = "dashed") +
-  scale_color_brewer(palette = "Dark2") +
-  scale_fill_brewer(palette = "Dark2") +
+  scale_color_brewer(palette = "Dark2", 
+                     labels = c(expression(paste(NO[2], "R")),
+                                expression(paste(NO[2], "SR")))) +
+  scale_fill_brewer(palette = "Dark2", 
+                    labels = c(expression(paste(NO[2], "R")),
+                               expression(paste(NO[2], "SR")))) +
+    scale_x_date(date_breaks = "3 months", date_labels = "%d %b %Y") +
   theme_bw()+
     theme(legend.position = "top") +
-  labs(x = "Fecha", y = expression(paste("Área debajo de la curva de la concentración promedio de ", NO[2], " (", mu, "mol.día.", m^-2, ")")), fill = "Predicción", col = "Predicción"))
+  labs(x = "Fecha", y = expression(paste("Área debajo de la curva de la columna promedio de ", NO[2], " (", mu, "mol.día.", m^-2, ")")), fill = "Predicción", col = "Predicción"))
 
 ggsave("Figuras/Modelo_2/Mediamovil_area_bajo_curva_predicciones.png", plot.areas, width = 10, height = 6)
 
@@ -61,6 +66,9 @@ datos.proporciones.periodo[, c("prop", "prop_max", "prop_min") := .(prediccion_t
                                                             prediccion_train_min/prediccion_test_min)]
 datos.proporciones.periodo <- datos.proporciones.periodo[, .(periodo, prop, prop_max, prop_min, comparacion = "Según restricciones")]
 
+datos.proporciones.periodo[, periodo := factor(periodo, levels = unique(periodo))]
+
+
 #por mes:
 datos.proporciones.mes <- datos[, lapply(.SD, trapz), .SDcols = variables, by = mes_anio]
 datos.proporciones.mes[, c("prop", "prop_max", "prop_min") := .(prediccion_train/prediccion_test,
@@ -68,20 +76,23 @@ datos.proporciones.mes[, c("prop", "prop_max", "prop_min") := .(prediccion_train
                                                             prediccion_train_min/prediccion_test_min)]
 datos.proporciones.mes <- datos.proporciones.mes[, .(periodo = mes_anio, prop, prop_max, prop_min, comparacion = "Mensual")]
 
-datos.proporciones <- rbind(datos.proporciones.periodo, datos.proporciones.mes)
+datos.proporciones.mes[, periodo := factor(periodo, levels = unique(periodo))]
 
-datos.proporciones[, periodo := factor(periodo, levels = unique(periodo))]
+#datos.proporciones <- rbind(datos.proporciones.periodo, datos.proporciones.mes)
 
-(plot.proporciones <- datos.proporciones %>%
-  ggplot(aes(x = periodo, y = prop, ymin = prop_min, ymax = prop_max, fill = comparacion)) +
-  geom_col() +
+#datos.proporciones[, periodo := factor(periodo, levels = unique(periodo))]
+
+(plot.proporciones <- datos.proporciones.mes %>%
+  ggplot(aes(x = periodo, y = prop, ymin = prop_min, ymax = prop_max)) +
+  geom_col(fill = "gray70") +
   #geom_errorbar() +
     geom_hline(yintercept = 1, linetype = "dashed", alpha = 0.75) +
+    geom_hline(data = datos.proporciones.periodo, aes(yintercept = prop, col = periodo)) +
   scale_color_brewer(palette = "Dark2") +
-  scale_fill_brewer(palette = "Dark2") +
+  #scale_fill_brewer(palette = "Dark2") +
   theme_bw() +
   theme(legend.position = "top", axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.margin = unit(c(0,0,0,1), "cm")) +
-  labs(x = "Intervalo de tiempo", y = expression(Q == frac(Área(NO[2]~R), Área(NO[2]~SR))), fill = "Tipo de período"))
+  labs(x = "Intervalo de tiempo", y = expression(Q == frac(Área(NO[2]~R), Área(NO[2]~SR))), col = "Q por período relativo a las restricciones"))
 
 ggsave("Figuras/Modelo_2/Proporciones_area_bajo_curva_predicciones.png", plot.proporciones, width = 10, height = 6)
 
