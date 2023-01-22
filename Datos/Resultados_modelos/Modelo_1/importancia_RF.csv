@@ -1,0 +1,30 @@
+variables,importancia
+precipitaciones,0.0001958181613441382
+temperatura,0.0038769074403933114
+es_finde,0.027187886986436323
+hora,0.6934438556576107
+dia_semana,0.03551437263335176
+mes,0.002078111069224739
+anio,0.00041752890540800016
+Año Nuevo [New Year's Day],6.544631782138951e-05
+Día Nacional de la Memoria por la Verdad y la Justicia [Memory's National Day for the Truth and Justice],5.5780993056276475e-06
+Día Nacional de la Soberanía [National Sovereignty Day],2.434835181911587e-06
+Día Pase a la Inmortalidad del General D. José de San Martin [Day Pass to the Immortality of General D. José de San Martin],7.366458931293883e-06
+Día Pase a la Inmortalidad del General D. Manuel Belgrano [Day Pass to the Immortality of General D. Manuel Belgrano],1.3657943961101098e-05
+Día Pase a la Inmortalidad del General Martín Miguel de Güemes [Day Pass to the Immortality of General Martín Miguel de Güemes],4.578725331057305e-05
+Día de Carnaval [Carnival's Day],9.506921545356396e-05
+Día de Pascuas [Easter Day],2.456758298723335e-05
+Día de la Independencia [Independence Day],9.630798266252427e-06
+Día de la Revolucion de Mayo [May Revolution Day],7.883917802296076e-06
+Día del Respeto a la Diversidad Cultural [Respect for Cultural Diversity Day],1.2410303938651367e-05
+Día del Trabajo [Labour Day],3.904232058783557e-05
+Día del Veterano y de los Caidos en la Guerra de Malvinas [Veterans Day and the Fallen in the Malvinas War],6.096042611165411e-06
+La Inmaculada Concepción [Immaculate Conception],7.670948577558442e-06
+Navidad [Christmas],0.00019901173937970907
+Semana Santa (Jueves Santo)  [Holy day (Holy Thursday)],4.2618987658748085e-05
+Semana Santa (Viernes Santo)  [Holy day (Holy Friday)],1.0047711939902357e-05
+y_diff_mediana_lag_1,0.18795008689144438
+y_diff_mediana_lag_8,0.011390215216521142
+y_diff_mediana_lag_12,0.010324491029216596
+y_diff_mediana_lag_24,0.015139997544486316
+y_diff_mediana_lag_168,0.011886407986847801

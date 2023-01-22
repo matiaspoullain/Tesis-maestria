@@ -1,27 +1,16 @@
-#Regresor RF
+import pandas as pd
+import json
+import os
 
-def estimador(parametros):
-        parametros_it = parametros.copy()
+#Funcion para leer los mejores parametros de los logs de las optimizaciones
+def get_mejores_params(algoritmo, archivo_log = None):
+    if archivo_log is None:
+        archivo_log = os.path.join('Modelos', 'logs', algoritmo, "Optimizacion_bayesiana_logs.json")
+    json_opt_out = []
+    for line in open(archivo_log, 'r'):
+        json_opt_out.append(json.loads(line))
+    json_opt_out = pd.DataFrame.from_records(json_opt_out)
 
-        parametros_it['n_estimators'] = int(parametros_it['n_estimators'])
+    parametros = json_opt_out[json_opt_out['target'] == max(json_opt_out['target'])]['params'].values[0]
 
-        dict_criterion = {
-        0: 'squared_error',
-        1: 'absolute_error',
-        2: 'poisson'
-        }
-        parametros_it['criterion'] = dict_criterion[int(parametros_it['criterion'])]
-
-        parametros_it['max_depth'] = int(parametros_it['max_depth'])
-        return RandomForestRegressor(**parametros_it, n_jobs = -1)
-
-def black_box_function(n_estimators, criterion, max_depth, min_samples_split, max_features):
-    parametros_opt = locals()
-    semillas = [randint(0, 1000000) for _ in range(n_semillas)]
-    scores = np.array([])
-    for semilla in semillas:
-        parametros_opt['random_state'] = semilla
-        clf = estimador(parametros = parametros_opt)
-        score_it = cross_val_score(estimator = clf, X = x_train, y = y_train, cv=cv, scoring='neg_root_mean_squared_error')
-        scores = np.append(scores, score_it.mean())
-    return scores.mean()
+    return parametros
