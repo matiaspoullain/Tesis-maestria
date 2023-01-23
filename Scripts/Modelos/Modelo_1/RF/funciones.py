@@ -17,13 +17,15 @@ def estimador(parametros):
 
 #Black box function para la optimizacion bayesiana del modelo RF
 #Usa variables definidas por fuera, no le pude encontrar otra vuelta
-def black_box_function(criterion, n_estimators, min_samples_split, max_features):
-    parametros_opt = locals()
-    semillas = [randint(0, 1000000) for _ in range(5)]
-    scores = np.array([])
-    for semilla in semillas:
-        parametros_opt['random_state'] = semilla
-        clf = estimador(parametros = parametros_opt)
-        score_it = cross_val_score(estimator = clf, X = x_train, y = y_train, cv=cv, scoring='neg_root_mean_squared_error')
-        scores = np.append(scores, score_it.mean())
-    return scores.mean()
+def black_box_function(x_train, y_train, cv):
+    def black_box_function_builder(criterion, n_estimators, min_samples_split, max_features):
+        parametros_opt = locals()
+        semillas = [randint(0, 1000000) for _ in range(5)]
+        scores = np.array([])
+        for semilla in semillas:
+            parametros_opt['random_state'] = semilla
+            clf = estimador(parametros = parametros_opt)
+            score_it = cross_val_score(estimator = clf, X = x_train, y = y_train, cv=cv, scoring='neg_root_mean_squared_error')
+            scores = np.append(scores, score_it.mean())
+        return scores.mean()
+    return black_box_function_builder
