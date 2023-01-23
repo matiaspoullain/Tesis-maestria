@@ -20,6 +20,8 @@ def estimador(parametros):
 def black_box_function(x_train, y_train, cv):
     def black_box_function_builder(criterion, n_estimators, min_samples_split, max_features):
         parametros_opt = locals()
+        exclude_keys = ['x_train', 'y_train', 'cv'] #Estos parametros estan en locals pero no los quiero como parametros del estimador
+        parametros_opt = {k: parametros_opt[k] for k in set(list(parametros_opt.keys())) - set(exclude_keys)}
         semillas = [randint(0, 1000000) for _ in range(5)]
         scores = np.array([])
         for semilla in semillas:
