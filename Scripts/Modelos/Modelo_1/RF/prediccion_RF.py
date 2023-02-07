@@ -7,7 +7,7 @@ from tqdm import tqdm
 from Scripts.Modelos.Modelo_1.funciones import get_mejores_params
 from Scripts.Modelos.Modelo_1.RF.funciones import estimador
 
-fecha_inicio = '2020-03-10'
+fecha_inicio = '2020-03-20'
 
 parametros = get_mejores_params("RF")
 datos = pd.read_csv(os.path.join('Datos', 'Insumos_python', 'insumo_modelo_1.csv'))

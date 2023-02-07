@@ -11,6 +11,6 @@ def get_mejores_params(algoritmo, archivo_log = None):
         json_opt_out.append(json.loads(line))
     json_opt_out = pd.DataFrame.from_records(json_opt_out)
 
-    parametros = json_opt_out[json_opt_out['target'] == max(json_opt_out['target'])]['params'].values[0]
+    parametros = json_opt_out[json_opt_out['target'] == min(json_opt_out['target'])]['params'].values[0]
 
     return parametros
