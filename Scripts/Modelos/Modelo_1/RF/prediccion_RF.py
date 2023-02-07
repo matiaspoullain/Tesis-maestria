@@ -10,9 +10,6 @@ from Scripts.Modelos.Modelo_1.RF.funciones import estimador
 fecha_inicio = '2020-03-10'
 
 parametros = get_mejores_params("RF")
-parametros['max_depth'] = None
-parametros['min_samples_split'] = 2
-parametros['criterion'] = 'squared_error'
 datos = pd.read_csv(os.path.join('Datos', 'Insumos_python', 'insumo_modelo_1.csv'))
 
 #Entreno solo con antes de la cuarentena
