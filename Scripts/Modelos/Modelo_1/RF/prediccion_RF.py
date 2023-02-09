@@ -13,8 +13,11 @@ parametros = get_mejores_params("RF")
 datos = pd.read_csv(os.path.join('Datos', 'Insumos_python', 'insumo_modelo_1.csv'))
 
 #Entreno solo con antes de la cuarentena
-x_train = datos[datos['ds'] < fecha_inicio].drop(['ds', 'y', 'y_diff_mediana'], axis = 1)
+x_train = datos[datos['ds'] < fecha_inicio].drop(['ds', 'y'], axis = 1)
 y_train = datos[datos['ds'] < fecha_inicio]['y']
+
+x_test = datos[datos['ds'] >= fecha_inicio].drop(['ds', 'y'], axis = 1)
+y_test = datos[datos['ds'] >= fecha_inicio]['y']
 
 
 clf = estimador(parametros)
@@ -23,10 +26,10 @@ clf.fit(x_train, y_train)
 
 
 """
-predicho = clf.predict(x_test)
+predicho = clf.predict(datos.drop(['ds', 'y'], axis = 1))
 datos['predicho'] = predicho
 
-datos.to_csv('Datos/Resultados_prophet/Modelo_1/predicho_modelo_1_RF.csv', index = False)
+datos.to_csv('Datos/Resultados_modelos/Modelo_1/predicho_modelo_1_RF.csv', index = False)
 """
 
 #Importancia de las variables:

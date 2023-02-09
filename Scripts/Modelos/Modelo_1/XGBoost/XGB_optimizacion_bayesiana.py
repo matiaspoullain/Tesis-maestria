@@ -31,17 +31,10 @@ n_datos = datos.shape[0]
 un_mes = 24*30
 n_splits = n_datos // un_mes - 1
 cv = TimeSeriesSplit(n_splits = n_splits, test_size = un_mes)
-##
 
 ## Optimizacion bayesiana:
 x_train = datos.drop(['ds', 'y'], axis = 1)
 y_train = datos['y']
-
-#Corrijo columnas que tienen "[", "]", a XGB no le gustan:
-x_train.columns = [nombre.replace('[', '(').replace(']', ')') for nombre in x_train.columns]
-
-#Corrijo los booleanos por que no le gustan a XGB:
-x_train[x_train.select_dtypes(include=['bool']).columns] = x_train.select_dtypes(include=['bool']).astype(int)
 
 # Parametros:
 init_points = 900

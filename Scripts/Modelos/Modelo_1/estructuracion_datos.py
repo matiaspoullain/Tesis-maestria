@@ -26,7 +26,9 @@ datos = datos.loc[:, datos.columns.notna()]
 # Cambio el valor de vehiculos a 10**vehiculos
 datos['y'] = 10**datos['y']
 datos = datos.rename(columns = {"ds_x":"ds"})
+datos = datos.sort_values(['ds'])
 
+""""
 #Busco los valores medianos (evitando outliers) de cada hora-dia de la semana
 medianas = datos.groupby(['dia_semana', 'hora'])[['y']].median().reset_index().rename({'y': 'y_mediana'}, axis = 1)
 
@@ -44,5 +46,13 @@ for i in [1, 8, 12, 24, 24*7]:#range(24*7, 0, -1):
    datos_lag['y_diff_mediana_lag_' + str(i)] = datos.y_diff_mediana.shift(i)
 datos = pd.concat([datos, datos_lag], axis=1)
 datos.dropna(inplace=True)
+"""
 
+#Corrijo columnas que tienen "[", "]":
+datos.columns = [nombre.replace('[', '(').replace(']', ')') for nombre in datos.columns]
+
+#Corrijo los booleanos a 0/1:
+datos[datos.select_dtypes(include=['bool']).columns] = datos.select_dtypes(include=['bool']).astype(int)
+
+#Guardo el archivo
 datos.to_csv(os.path.join('Datos', 'Insumos_python', 'insumo_modelo_1.csv'), index = False)
