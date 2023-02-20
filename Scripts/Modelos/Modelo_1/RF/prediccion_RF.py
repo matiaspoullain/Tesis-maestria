@@ -25,13 +25,13 @@ clf.fit(x_train, y_train)
 
 
 
-"""
+
 predicho = clf.predict(datos.drop(['ds', 'y'], axis = 1))
 datos['predicho'] = predicho
 
 datos.to_csv('Datos/Resultados_modelos/Modelo_1/predicho_modelo_1_RF.csv', index = False)
-"""
 
+"""
 #Importancia de las variables:
 importances = clf.feature_importances_
 std = np.std([tree.feature_importances_ for tree in clf.estimators_], axis=0)
@@ -65,3 +65,4 @@ for fecha_it in tqdm(fechas_test):
 
 datos['predicho'] = predichos
 datos.to_csv('Datos/Resultados_modelos/Modelo_1/predicho_modelo_1_RF.csv', index = False)
+"""
