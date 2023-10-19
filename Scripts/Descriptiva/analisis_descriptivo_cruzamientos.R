@@ -308,5 +308,6 @@ etiquetadora <- function(variable, value){
 ggsave("Figuras/Descriptiva/correlaciones_no2.png", plot.correlaciones, width = 9, height = 12)
 
 
+print("Mejores combinaciones:")
 dt.correlaciones[, mejor := abs(spearman) == max(abs(spearman)), by = variable]
 dt.correlaciones[mejor == TRUE]
