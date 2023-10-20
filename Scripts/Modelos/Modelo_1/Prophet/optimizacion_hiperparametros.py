@@ -81,7 +81,7 @@ def objective(trial):
     model.fit(datos, max_treedepth = 30)
 
     # CV
-    df_cv = cross_validation(model, cutoffs=cutoffs, horizon=f'{horizon-1} hours')
+    df_cv = cross_validation(model, cutoffs=cutoffs, horizon=f'{horizon-1} hours', parallel='processes')
 
     # Calculate the Mean Absolute Percentage Error (MAPE)
     rmse = performance_metrics(df_cv)['rmse'].values[0]

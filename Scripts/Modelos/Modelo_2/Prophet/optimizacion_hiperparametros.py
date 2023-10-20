@@ -5,6 +5,7 @@ from prophet.diagnostics import cross_validation, performance_metrics
 import optuna
 import json
 from termcolor import colored
+from datetime import timedelta
 
 
 # -------------------------------- Parametros -------------------------------- #
@@ -13,12 +14,15 @@ df_optimizacion_directory = os.path.join('Modelos', 'Modelo_2')
 db_optimizacion = os.path.join(df_optimizacion_directory, 'opt_bayesiana.db')
 json_parametros_optimizados = os.path.join(df_optimizacion_directory, 'parametros_optimizados.json')
 os.makedirs(df_optimizacion_directory, exist_ok=True)
+semanas_heldout = 3
 
 # ---------------------------------------------------------------------------- #
 #                               Lectura de datos                               #
 # ---------------------------------------------------------------------------- #
 datos = pd.read_csv('Datos/Insumo_modelos/Modelo_2/prophet.csv')
 datos['ds'] = pd.to_datetime(datos['ds']).dt.tz_localize(None)
+corte_heldout = datos['ds'].max() - timedelta(weeks=semanas_heldout)
+datos = datos[datos['ds'] <= corte_heldout].reset_index(drop = True) 
 feriados = pd.read_csv('Datos/Insumos_prophet/feriados.csv')
 
 # --------------------- Obtener lista de indices para CV --------------------- #
@@ -66,7 +70,7 @@ def objective(trial):
     model.fit(X, max_treedepth = 30)
 
     # CV
-    df_cv = cross_validation(model, cutoffs=cutoffs, horizon=f'{horizon-1} days')
+    df_cv = cross_validation(model, cutoffs=cutoffs, horizon=f'{horizon-1} days', parallel='processes')
 
     # Calculate the Mean Absolute Percentage Error (MAPE)
     rmse = performance_metrics(df_cv)['rmse'].values[0]

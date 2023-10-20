@@ -5,6 +5,8 @@ from prophet.utilities import regressor_coefficients
 import pickle
 import json
 import numpy as np
+from datetime import timedelta
+
 
 
 # --------------------------------- Archivos --------------------------------- #
@@ -15,6 +17,7 @@ archivo_modelo = 'Modelos/Modelo_2/modelo.pkl'
 carpeta_output = os.path.join('Datos', 'Resultados_modelos', 'Modelo_2')
 archivo_predicciones = os.path.join(carpeta_output, 'prediccion.csv')
 archivo_predicciones_sin_restricciones = os.path.join(carpeta_output, 'prediccion_sin_restricciones.csv')
+archivo_predicciones_heldout = os.path.join(carpeta_output, 'prediccion_sin_heldout.csv')
 archivo_coeficientes = os.path.join(carpeta_output, 'coeficientes_regresoras.csv')
 os.makedirs(carpeta_output, exist_ok=True)
 
@@ -27,12 +30,18 @@ df_optimizacion_directory = os.path.join('Modelos', 'Modelo_2')
 json_parametros_optimizados = os.path.join(df_optimizacion_directory, 'parametros_optimizados.json')
 with open(json_parametros_optimizados, 'r') as json_file:
     parametros = json.load(json_file)
+semanas_heldout = 3
 
 # ---------------------------------------------------------------------------- #
 #                               Lectura de datos                               #
 # ---------------------------------------------------------------------------- #
 datos = pd.read_csv(archivo_input)
 datos['ds'] = pd.to_datetime(datos['ds']).dt.tz_localize(None)
+
+corte_heldout = datos['ds'].max() - timedelta(weeks=3)
+heldout = datos[datos['ds'] > corte_heldout].reset_index(drop = True)
+datos = datos[datos['ds'] <= corte_heldout].reset_index(drop = True) 
+
 X = datos[~datos['y'].isnull()]
 feriados = pd.read_csv('Datos/Insumos_prophet/feriados.csv')
 
@@ -85,11 +94,17 @@ for y in ys:
     predichos.loc[:, y] = 10**predichos.loc[:, y]
 predichos.to_csv(archivo_predicciones, index = False)
 
+#Prediccion sobre heldout
+predichos_heldout = model.predict(heldout)
+predichos_sin_restricciones = predichos_heldout[['ds'] + ys]
+for y in ys:
+    predichos_sin_restricciones.loc[:, y] = 10**predichos_sin_restricciones.loc[:, y]
+predichos_sin_restricciones.to_csv(archivo_predicciones_heldout, index = False)
 
 #Predicciones para sin restricciones:
 predichos_sin_restricciones = model.predict(datos_sin_restricciones)
-ys = ['yhat', 'yhat_lower', 'yhat_upper']
 predichos_sin_restricciones = predichos_sin_restricciones[['ds'] + ys]
 for y in ys:
     predichos_sin_restricciones.loc[:, y] = 10**predichos_sin_restricciones.loc[:, y]
 predichos_sin_restricciones.to_csv(archivo_predicciones_sin_restricciones, index = False)
+
