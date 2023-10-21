@@ -4,6 +4,7 @@ gc()
 library(dplyr)
 library(data.table)
 library(lubridate)
+library(janitor)
 
 #Mejores combinaciones de transformaciones:
 #Target: log10
@@ -34,3 +35,25 @@ datos <- no2 %>%
 #formatear para prophet
 setnames(datos, "fecha", "ds")
 fwrite(datos, "Datos/Insumo_modelos/Modelo_2/prophet.csv")
+
+
+#Input para XGB:
+#Variables relacionadas con la fecha:
+datos[, c("dia_de_semana",
+          "dia_del_año",
+          "dia_del_mes",
+          "mes") := .(
+            wday(ds, week_start = 1),
+            yday(ds),
+            mday(ds),
+            month(ds)
+          )]
+#Feriados
+feriados <- fread("Datos/Insumos_prophet/feriados.csv")
+x <- feriados$holiday
+names(x) <- feriados$holiday
+feriados[, holiday := names(clean_names(x, allow_dupes = TRUE))]
+datos <- datos %>%
+  merge(feriados, by = "ds", all.x = TRUE)
+datos[is.na(holiday), holiday := "dia_normal"]
+fwrite(datos, "Datos/Insumo_modelos/Modelo_2/XGB.csv")
