@@ -1,0 +1,11 @@
+Feature,Importance
+cantidad_pasos,0.028835520148277283
+log_temperatura,0.02857576310634613
+log_intensidad_viento_km_h,0.041133370250463486
+dia_de_semana,0.024895796552300453
+dia_del_año,0.03020315244793892
+dia_del_mes,0.02477649599313736
+mes,0.032981306314468384
+holiday_dummy_dia_nacional_de_la_memoria_por_la_verdad_y_la_justicia_memorys_national_day_for_the_truth_and_justice,0.03237185999751091
+holiday_dummy_dia_normal,0.06293991208076477
+holiday_dummy_semana_santa_jueves_santo_holy_day_holy_thursday,0.050962530076503754
