@@ -90,7 +90,7 @@ def objective(trial):
 
 # Crear study e iniciar la optimizacion
 study = optuna.create_study(direction='minimize', study_name='Modelo_1', storage=f'sqlite:///{db_optimizacion}', load_if_exists = True)
-study.optimize(objective, n_trials=100, gc_after_trial=True)
+study.optimize(objective, n_trials=29, gc_after_trial=True)
 
 # Guardar mejores hiperparametros
 with open(json_parametros_optimizados, 'w') as json_file:
