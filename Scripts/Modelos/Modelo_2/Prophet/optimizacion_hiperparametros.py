@@ -10,7 +10,7 @@ from datetime import timedelta
 
 # -------------------------------- Parametros -------------------------------- #
 timeseries_cv_folds = 5
-df_optimizacion_directory = os.path.join('Modelos', 'Modelo_2')
+df_optimizacion_directory = os.path.join('Modelos', 'Modelo_2', 'Prophet')
 db_optimizacion = os.path.join(df_optimizacion_directory, 'opt_bayesiana.db')
 json_parametros_optimizados = os.path.join(df_optimizacion_directory, 'parametros_optimizados.json')
 os.makedirs(df_optimizacion_directory, exist_ok=True)
@@ -70,7 +70,7 @@ def objective(trial):
     model.fit(X, max_treedepth = 30)
 
     # CV
-    df_cv = cross_validation(model, cutoffs=cutoffs, horizon=f'{horizon-1} days', parallel='processes')
+    df_cv = cross_validation(model, cutoffs=cutoffs, horizon=f'{horizon-2} days', parallel='processes')
 
     # Calculate the Mean Absolute Percentage Error (MAPE)
     rmse = performance_metrics(df_cv)['rmse'].values[0]
