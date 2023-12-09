@@ -88,7 +88,8 @@ coeficientes_regresoras = regressor_coefficients(model)
 coeficientes_regresoras.to_csv(archivo_coeficientes, index = False)
 
 # Formatear predichos para guardar:
-ys = ['yhat', 'yhat_lower', 'yhat_upper']
+ys = ['y', 'yhat', 'yhat_lower', 'yhat_upper']
+predichos['y'] = datos['y']
 predichos = predichos[['ds'] + ys]
 for y in ys:
     predichos.loc[:, y] = 10**predichos.loc[:, y]
@@ -96,6 +97,7 @@ predichos.to_csv(archivo_predicciones, index = False)
 
 #Prediccion sobre heldout
 predichos_heldout = model.predict(heldout)
+predichos_heldout['y'] = heldout['y']
 predichos_heldout = predichos_heldout[['ds'] + ys]
 for y in ys:
     predichos_heldout.loc[:, y] = 10**predichos_heldout.loc[:, y]
@@ -103,6 +105,7 @@ predichos_heldout.to_csv(archivo_predicciones_heldout, index = False)
 
 #Predicciones para sin restricciones:
 predichos_sin_restricciones = model.predict(datos_sin_restricciones)
+predichos_sin_restricciones['y'] = datos_sin_restricciones['y']
 predichos_sin_restricciones = predichos_sin_restricciones[['ds'] + ys]
 for y in ys:
     predichos_sin_restricciones.loc[:, y] = 10**predichos_sin_restricciones.loc[:, y]
