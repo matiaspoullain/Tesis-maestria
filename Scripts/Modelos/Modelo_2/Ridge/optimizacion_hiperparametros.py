@@ -55,7 +55,7 @@ X = datos.drop(['ds', 'heldout', 'inv_index', 'new_index'], axis = 1)
 
 def objective(trial):
     param = {
-        'alpha': trial.suggest_float('alpha', 1e-10, 1.0, log = True)
+        'alpha': trial.suggest_float('alpha', 1e-10, 500.0, log = True)
     }
             
     model = Ridge(**param)
