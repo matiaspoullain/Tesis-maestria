@@ -14,14 +14,14 @@ archivo_input = 'Datos/Insumo_modelos/Modelo_2/prophet.csv'
 archivo_input_sin_restricciones = 'Datos/Resultados_modelos/Modelo_1/prediccion.csv'
 archivo_modelo = 'Modelos/Modelo_2/modelo.pkl'
 
-carpeta_output = os.path.join('Datos', 'Resultados_modelos', 'Modelo_2')
+carpeta_output = os.path.join('Datos', 'Resultados_modelos', 'Modelo_2', 'Prophet')
 archivo_predicciones = os.path.join(carpeta_output, 'prediccion.csv')
 archivo_predicciones_sin_restricciones = os.path.join(carpeta_output, 'prediccion_sin_restricciones.csv')
-archivo_predicciones_heldout = os.path.join(carpeta_output, 'prediccion_sin_heldout.csv')
+archivo_predicciones_heldout = os.path.join(carpeta_output, 'prediccion_heldout.csv')
 archivo_coeficientes = os.path.join(carpeta_output, 'coeficientes_regresoras.csv')
 os.makedirs(carpeta_output, exist_ok=True)
 
-carpeta_figuras = os.path.join('Figuras', 'Modelo_2')
+carpeta_figuras = os.path.join('Figuras', 'Modelo_2', 'Prophet')
 archivo_plot_componentes = os.path.join(carpeta_figuras, 'plot_componentes.png')
 os.makedirs(carpeta_figuras, exist_ok=True)
 
@@ -75,7 +75,7 @@ model.add_regressor('log_temperatura', mode='additive')
 model.add_regressor('log_intensidad_viento_km_h', mode='additive')
 
 # Fittear modelo y predecir
-model.fit(X, max_treedepth = 30)
+model.fit(X, max_treedepth = 30, show_console=True)
 predichos = model.predict(datos)
 
 # Guardar modelo
@@ -96,10 +96,10 @@ predichos.to_csv(archivo_predicciones, index = False)
 
 #Prediccion sobre heldout
 predichos_heldout = model.predict(heldout)
-predichos_sin_restricciones = predichos_heldout[['ds'] + ys]
+predichos_heldout = predichos_heldout[['ds'] + ys]
 for y in ys:
-    predichos_sin_restricciones.loc[:, y] = 10**predichos_sin_restricciones.loc[:, y]
-predichos_sin_restricciones.to_csv(archivo_predicciones_heldout, index = False)
+    predichos_heldout.loc[:, y] = 10**predichos_heldout.loc[:, y]
+predichos_heldout.to_csv(archivo_predicciones_heldout, index = False)
 
 #Predicciones para sin restricciones:
 predichos_sin_restricciones = model.predict(datos_sin_restricciones)
