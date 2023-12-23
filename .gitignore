@@ -5,3 +5,4 @@
 .pyc
 logs.txt
 nohup.out
+__pycache__

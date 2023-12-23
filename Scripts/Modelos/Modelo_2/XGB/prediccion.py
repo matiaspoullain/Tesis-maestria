@@ -52,8 +52,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=94)
 #Datos predichos por Modelo 1:
 datos_sin_restricciones = datos.copy()
 prediccion_m1 = pd.read_csv(archivo_input_sin_restricciones)
-prediccion_m1['ds'] = pd.to_datetime(prediccion_m1['ds']).dt.tz_localize(None)
-prediccion_m1 = prediccion_m1[['ds', 'yhat']]
+prediccion_m1['ds'] = pd.to_datetime(pd.to_datetime(prediccion_m1['ds']).dt.tz_localize(None).dt.date)
+prediccion_m1 = prediccion_m1.groupby('ds', as_index = False)['yhat'].sum()
 prediccion_m1['yhat'] = np.log10(prediccion_m1['yhat'])
 datos_sin_restricciones = datos_sin_restricciones.merge(prediccion_m1, on = 'ds')
 datos_sin_restricciones.loc[datos_sin_restricciones['ds'] >= '2020-03-20', 'cantidad_pasos'] = datos_sin_restricciones.loc[datos_sin_restricciones['ds'] >= '2020-03-20', 'yhat']
