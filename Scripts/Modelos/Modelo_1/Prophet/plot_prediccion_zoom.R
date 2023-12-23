@@ -4,8 +4,9 @@ library(tidyverse)
 library(data.table)
 library(lubridate)
 
-
-datos <- fread(file.path("Datos","Resultados_Prophet", "Modelo_1", "df_prophet_prediccion.csv"))
+observados <- fread(file.path("Datos","Insumo_modelos", "Modelo_1.csv"))[, .(ds, y = 10**y)]
+datos <- fread(file.path("Datos","Resultados_modelos", "Modelo_1", "prediccion.csv")) %>%
+  merge(observados, by = 'ds')
 
 #datos[, ds := as_datetime(ds)]
 
