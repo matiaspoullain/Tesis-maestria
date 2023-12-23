@@ -49,7 +49,7 @@ fwrite(df.agg, archivo.comparaciones)
 
 (plot.metricas <- df.agg %>%
   ggplot(aes(x = modelo, y = value)) +
-  geom_col() +
+  geom_col(fill = "gray70") +
   facet_wrap(variable~., scales = "free") +
   theme_bw() +
   labs(x = 'Modelo', y = 'Valor'))
