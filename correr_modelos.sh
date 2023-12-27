@@ -1,0 +1,10 @@
+python -m Scripts.Modelos.Modelo_2.Prophet.optimizacion_hiperparametros
+python -m Scripts.Modelos.Modelo_2.Prophet.prediccion
+python -m Scripts.Modelos.Modelo_2.Ridge.optimizacion_hiperparametros
+python -m Scripts.Modelos.Modelo_2.Ridge.prediccion
+python -m Scripts.Modelos.Modelo_2.SVM.optimizacion_hiperparametros
+python -m Scripts.Modelos.Modelo_2.SVM.prediccion
+python -m Scripts.Modelos.Modelo_2.XGB.optimizacion_hiperparametros
+python -m Scripts.Modelos.Modelo_2.XGB.prediccion
+python -m Scripts.Modelos.Modelo_2.KNN.optimizacion_hiperparametros
+python -m Scripts.Modelos.Modelo_2.KNN.prediccion

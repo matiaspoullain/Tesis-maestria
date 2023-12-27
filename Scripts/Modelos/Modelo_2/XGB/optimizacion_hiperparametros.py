@@ -57,27 +57,26 @@ def objective(trial):
             "verbosity": 0,
             "tree_method": "auto",
             "booster": "gbtree",
-            "lambda": trial.suggest_float("lambda", 1e-4, 1.0, log=True),
-            "alpha": trial.suggest_float("alpha", 1e-4, 1.0, log=True),
             "subsample": trial.suggest_float("subsample", 0.2, 1.0),
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.2, 1.0),
             'eval_metric': 'rmse',
             "max_depth": trial.suggest_int("max_depth", 3, 101, step=2),
             "min_child_weight": trial.suggest_int("min_child_weight", 0, 10),
-            "eta": trial.suggest_float("eta", 1e-4, 1.0, log=True),
-            "gamma": trial.suggest_float("gamma", 1e-8, 1.0, log=True),
-            "grow_policy": trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
+            "eta": trial.suggest_float("eta", 1e-4, 1.0, log=True)
         }
 
     param['early_stopping_rounds'] = int(50 + 5/param["eta"])
 
-    xgb_model = xgb.cv(param, X, folds = cv_indexes, num_boost_round = num_boost_round, early_stopping_rounds = param['early_stopping_rounds'])
+    xgb_pruning_callback = optuna.integration.XGBoostPruningCallback(trial, 'test-rmse')
+
+    xgb_model = xgb.cv(param, X, folds = cv_indexes, num_boost_round = num_boost_round, early_stopping_rounds = param['early_stopping_rounds'], callbacks=[xgb_pruning_callback])
     mean_score = xgb_model['test-rmse-mean'].min()
     return mean_score
 
 # Crear study e iniciar la optimizacion
-study = optuna.create_study(direction='minimize', study_name='Modelo_2', storage=f'sqlite:///{db_optimizacion}', load_if_exists = True)
-study.optimize(objective, n_trials=100, gc_after_trial=True)
+pruner = optuna.pruners.MedianPruner(n_startup_trials=30, n_warmup_steps=int(num_boost_round/10))
+study = optuna.create_study(direction='minimize', study_name='Modelo_2', storage=f'sqlite:///{db_optimizacion}', load_if_exists = True, pruner = pruner)
+study.optimize(objective, n_trials=1000, gc_after_trial=True)
 
 # Guardar mejores hiperparametros
 best_params = study.best_params

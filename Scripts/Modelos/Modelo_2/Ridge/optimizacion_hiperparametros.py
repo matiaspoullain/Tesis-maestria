@@ -16,7 +16,6 @@ db_optimizacion = os.path.join(df_optimizacion_directory, 'opt_bayesiana.db')
 json_parametros_optimizados = os.path.join(df_optimizacion_directory, 'parametros_optimizados.json')
 os.makedirs(df_optimizacion_directory, exist_ok=True)
 semanas_heldout = 3
-num_boost_round = 10000
 
 # ---------------------------------------------------------------------------- #
 #                               Lectura de datos                               #

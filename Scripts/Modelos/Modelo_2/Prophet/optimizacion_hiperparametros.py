@@ -62,6 +62,7 @@ def objective(trial):
         holidays_prior_scale=holidays_prior_scale
     )
 
+    model.add_regressor('pp', mode='additive')
     model.add_regressor('cantidad_pasos', mode='additive')
     model.add_regressor('log_temperatura', mode='additive')
     model.add_regressor('log_intensidad_viento_km_h', mode='additive')
