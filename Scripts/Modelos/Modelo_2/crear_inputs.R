@@ -20,7 +20,9 @@ vehiculos <- vehiculos[, .(cantidad_pasos = log10(sum(cantidad_pasos, na.rm = TR
 #Tiempo
 tiempo <- fread("Datos/Procesados/datos_diarios_tiempo_procesados.csv")
 temperatura <- tiempo[, .(fecha = fecha + 2, log_temperatura = log10(temperatura))]
-viento <- tiempo[, .(fecha, log_intensidad_viento_km_h = log10(intensidad_viento_km_h))]
+tiempo <- tiempo[, .(fecha,
+                     log_intensidad_viento_km_h = log10(intensidad_viento_km_h),
+                     pp)]
 
 #NO2:
 no2 <- fread("Datos/Procesados/no2_diario_procesado.csv")
@@ -30,7 +32,7 @@ no2 <- no2[, .(fecha, y = log10(NO2_trop_mean))]
 datos <- no2 %>%
   merge(vehiculos, by = "fecha") %>%
   merge(temperatura, by = "fecha")%>%
-  merge(viento, by = "fecha")
+  merge(tiempo, by = "fecha")
 
 #formatear para prophet
 setnames(datos, "fecha", "ds")
@@ -50,9 +52,7 @@ datos[, c("dia_de_semana",
           )]
 #Feriados
 feriados <- fread("Datos/Insumos_prophet/feriados.csv")
-x <- feriados$holiday
-names(x) <- feriados$holiday
-feriados[, holiday := names(clean_names(x, allow_dupes = TRUE))]
+feriados[, holiday := sub("_\\d+$", "", make_clean_names(holiday))]
 datos <- datos %>%
   merge(feriados, by = "ds", all.x = TRUE)
 datos[is.na(holiday), holiday := "dia_normal"]

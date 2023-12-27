@@ -15,7 +15,7 @@ abreviacion <- c("T\\textsubscript{h}",
                  "T\\textsubscript{d}",
                  "OP\\textsubscript{h}",
                  "OP\\textsubscript{d}",
-                 "I\\textsubscript{v}")
+                 "IV\\textsubscript{d}")
 
 resolucion <- c("Horaria",
                 "Horaria",
