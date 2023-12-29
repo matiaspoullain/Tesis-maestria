@@ -1,1 +1,1 @@
-{"C": 0.15034279526771765, "epsilon": 0.09749828805436263, "kernel": "sigmoid", "gamma": "scale"}
+{"C": 0.13322382412433878, "epsilon": 0.08607556430842349, "kernel": "sigmoid", "gamma": "auto"}
