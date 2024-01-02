@@ -26,11 +26,10 @@ medio <- max(vehiculos$frecuencia) / 2
 freq.inv.seleccionados <- Mod(vehiculos$fft_valor) %>%
   sort(decreasing = TRUE)
 freq.inv.seleccionados <- c(freq.inv.seleccionados[1:5])
-horas.seleccionadas <- c(8, 6)
-
+horas.seleccionadas <- c(24*7 + 0.6923, 8, 6)
 
 (plot.df <- vehiculos[frecuencia <= medio]%>%
-  ggplot(aes(x = frecuencia, y = Mod(fft_valor), label = fifelse(round(Mod(fft_valor)) %in% round(freq.inv.seleccionados) | round(1/frecuencia, 5) %in% horas.seleccionadas, paste(round(1/frecuencia, 2), 'Hs'), NA_character_))) +
+  ggplot(aes(x = frecuencia, y = Mod(fft_valor), label = fifelse(round(Mod(fft_valor)) %in% round(freq.inv.seleccionados) | round(1/frecuencia, 4) %in% horas.seleccionadas, paste(round(1/frecuencia, 1), 'Hs'), NA_character_))) +
   geom_line() +
   geom_text(vjust = -1) + 
   scale_x_continuous(label = function(x) round(1/x, 2), n.breaks = 20) +

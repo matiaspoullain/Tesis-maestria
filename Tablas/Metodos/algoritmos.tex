@@ -1,0 +1,28 @@
+% latex table generated in R 4.2.1 by xtable 1.8-4 package
+% Wed Dec 27 20:35:46 2023
+\begin{table}[ht]
+\centering
+\begin{tabular}{lll}
+  \hline
+Nombre & Abreviación & Hyperparámetros Optimizados e intervalos/opciones de búsqueda \\ 
+  \hline
+K-Nearest Neighbors & KNN & n\_neighbors [1; 50]\newline
+                weights [uniform; distance]\newline
+                p [1.0; 2.0] \\ 
+  Prophet & Prophet & changepoint\_prior\_scale [0.001; 5.0]\newline
+                seasonality\_prior\_scale [0.01; 10.0]\newline
+                holidays\_prior\_scale [0.01; 10.0] \\ 
+  Ridge & Ridge & alpha [1e-10; 500.0] \\ 
+  Support Vector Machine & SVM & C [1e-3; 100.0]\newline
+                epsilon [0.001; 0.1]\newline
+                kernel [linear; poly; rbf; sigmoid]\newline
+                gamma [scale; auto] si kernel \neq 'linear'\newline
+                degree [2; 4] si kernel = 'poly' \\ 
+  Extreme Gradient Boosting & XGB & subsample [0.2; 1.0]\newline
+                colsample\_bytree [0.2; 1.0]\newline
+                max\_depth [3; 101]\newline
+                min\_child\_weight [0; 10]\newline
+                eta [1e-4; 1.0] \\ 
+   \hline
+\end{tabular}
+\end{table}
