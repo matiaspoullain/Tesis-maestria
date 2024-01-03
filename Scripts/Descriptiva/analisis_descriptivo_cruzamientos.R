@@ -5,6 +5,8 @@ gc()
 library(tidyverse)
 library(data.table)
 library(lubridate)
+library(xtable)
+library(stringi)
 
 
 #Vehiculos vs meteorologicas
@@ -295,9 +297,13 @@ etiquetadora <- function(variable, value){
   return(etiquetas.grid[value])
 }
 
+dt.correlaciones[, label := fifelse(abs(spearman) == max(abs(spearman)), spearman, NA_real_), by = .(variable, target)]
+
 (plot.correlaciones <- dt.correlaciones %>%
                          ggplot(aes(x = lag, y = spearman, col = conversion)) +
                          geom_line() +
+                         geom_point(aes(y = label)) +
+                         geom_text(aes(label = stri_pad_right(as.character(label), 4, 0), y = label * 1.1), col = 'black', nudge_x = 0.5) +
                          geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.75) +
                          facet_grid(variable~target, scales = "free", labeller = etiquetadora)+
                          scale_color_brewer(palette = "Dark2") +
@@ -309,5 +315,13 @@ ggsave("Figuras/Descriptiva/correlaciones_no2.png", plot.correlaciones, width = 
 
 
 print("Mejores combinaciones:")
-dt.correlaciones[, mejor := abs(spearman) == max(abs(spearman)), by = variable]
-dt.correlaciones[mejor == TRUE]
+dt.correlaciones[, mejor := abs(spearman) == max(abs(spearman)), by = .(variable, target, conversion)]
+dt.delivery <- dt.correlaciones[mejor == TRUE & conversion != 'Identidad' & target != 'NO2_trop_mean']
+
+dt.delivery[, spearman_label := fifelse(abs(spearman) == max(abs(spearman)), paste0('\\textbf{', as.character(round(spearman, 3)), '}'), as.character(round(spearman, 3))),by = variable]
+dt.delivery[, target := gsub('sqrt_NO2_trop_mean', '$\\\\sqrt{NO_{2}}$', target)]
+dt.delivery[, target := gsub('log10_NO2_trop_mean', '$Log_{10}(NO_{2})$', target)]
+
+dt.delivery <- dcast(dt.delivery, variable + lag + conversion ~ target, value.var = "spearman_label")
+print(xtable(dt.delivery, type = "latex"), file = "Tablas/Descriptiva/correlaciones.tex", include.rownames=FALSE, , sanitize.colnames.function = identity, sanitize.text.function = identity)
+
