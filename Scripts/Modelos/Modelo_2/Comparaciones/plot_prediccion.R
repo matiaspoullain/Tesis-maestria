@@ -92,13 +92,19 @@ ggsave("Figuras/Modelo_2/Mediamovil_area_bajo_curva_predicciones.png", plot.area
 
 
 ## Analisis ----------------------------------------------------------------
-datos.valores[, c("periodo", "mes_anio") := .(fifelse(ds < as.Date("2020-03-20"), "Previo a restricciones", "Durante las restricciones"),
-                                      format(datos.valores$ds, format = "%b %Y"))]
+datos.valores[, c("periodo", "mes_anio") := .(
+  fifelse(ds < as.Date("2020-03-20"), "Previo a restricciones", "Durante las restricciones"),
+  format(datos.valores$ds, format = "%b %Y"))]
+datos.valores <- datos.valores %>%
+  rbind(datos.valores[between(ds, as.Date("2020-03-20"), as.Date("2020-05-04"))] %>%
+          mutate(periodo = "Periodo Represa et al."))
+
 
 #por periodo
 datos.proporciones.periodo <- datos.valores[, .(area_value = trapz(value)), by = .(variable, periodo)]
 datos.proporciones.periodo <- datos.proporciones.periodo[, .(prop = area_value[1]/area_value[2]), by = periodo]
 datos.proporciones.periodo <- datos.proporciones.periodo[, .(periodo, prop, comparacion = "Según restricciones")]
+print(paste("Proporción para el período utilizado por Represa et al: ", datos.proporciones.periodo[periodo == "Periodo Represa et al.", as.numeric(prop)]))
 datos.proporciones.periodo <- datos.proporciones.periodo[periodo == 'Durante las restricciones']
 datos.proporciones.periodo[, periodo := "Q promedio durante las restricciones"]
 datos.proporciones.periodo[, periodo := factor(periodo, levels = unique(periodo))]
@@ -109,6 +115,10 @@ datos.proporciones.mes <- datos.valores [ds >= as.Date('2020-03-01'), .(area_val
 datos.proporciones.mes <- datos.proporciones.mes[, .(prop = area_value[1]/area_value[2]), by = mes_anio]
 datos.proporciones.mes <- datos.proporciones.mes[, .(periodo = mes_anio, prop, comparacion = "Mensual")]
 datos.proporciones.mes[, periodo := factor(periodo, levels = unique(periodo))]
+
+archivo.mensual <- file.path(carpeta.archivos, 'General', 'Q_mesual.csv')
+
+fwrite(rbind(datos.proporciones.mes, datos.proporciones.periodo), archivo.mensual)
 
 (plot.proporciones <- datos.proporciones.mes %>%
     ggplot(aes(x = periodo, y = prop)) +
