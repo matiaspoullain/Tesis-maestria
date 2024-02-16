@@ -5,12 +5,14 @@ gc()
 library(tidyverse)
 library(data.table)
 library(lubridate)
+library(xtable)
+library(stringi)
 
 
 #Vehiculos vs meteorologicas
 #Procesamiento vehiculos
 vehiculos <- fread("Datos/Procesados/conteo_vehicular.csv")
-feriados <- fread("Datos/feriados.csv", encoding = "UTF-8")
+feriados <- fread("Datos/Insumos_prophet/feriados.csv", encoding = "UTF-8")
 
 vehiculos[, periodo := fifelse(fecha_hora < as.Date("2020-03-20"), "Previo a restricciones", "Durante las restricciones") %>%
             as.factor() %>%
@@ -25,9 +27,15 @@ vehiculos[, condicion_dia := fcase(as.Date(fecha_hora) %in% feriados$ds, "Feriad
                                    default = "Día de semana") %>%
             factor(levels = c("Día de semana", "Fin de semana", "Feriado"))]
 
+vehiculos.diario <- vehiculos[, .(cantidad_pasos = sum(cantidad_pasos, na.rm = TRUE),
+                                         periodo = unique(periodo),
+                                         dia_semana = unique(dia_semana),
+                                         condicion_dia = unique(condicion_dia)),
+                                     by = .(fecha = as.Date(fecha_hora))]
+
 #Procesamiento tiempo
 
-tiempo <- fread("Datos/Procesados/datos_tiempo_procesados.csv")
+tiempo <- fread("Datos/Procesados/datos_horarios_tiempo_procesados.csv")
 
 #Uno las bases
 
@@ -41,13 +49,6 @@ tiempo[, temp.media.hora := mean(temperatura), by = hora]
 
 vehiculos.tiempo <- vehiculos.tiempo %>%
   merge(tiempo[, .(fecha_hora, hora, temp.media.hora)], by = "fecha_hora")
-
-vehiculos.tiempo[, dif.temp.hora := temperatura - temp.media.hora]
-
-vehiculos.tiempo %>%
-  ggplot(aes(x = dif.temp.hora, y = cantidad_pasos, col = periodo)) +
-  geom_point(alpha = 0.1) +
-  facet_grid(hora~condicion_dia)
 
 cor.test(vehiculos.tiempo$cantidad_pasos, vehiculos.tiempo$temperatura, method = "pearson")
 
@@ -93,25 +94,9 @@ vehiculos.tiempo.heatmap %>%
 
 
 #Lo mismo pero diario:
-vehiculos.tiempo.diario <- vehiculos.tiempo[, .(cantidad_pasos = sum(cantidad_pasos, na.rm = TRUE),
-                                                periodo = unique(periodo),
-                                                dia_semana = unique(dia_semana),
-                                                condicion_dia = unique(condicion_dia),
-                                                temperatura = mean(temperatura, na.rm = TRUE),
-                                                pp = as.numeric(sum(pp, na.rm = TRUE)> 1),
-                                                dif.temp.dia = mean(dif.temp.hora, na.rm = TRUE)),
-                                            by = .(fecha = as.Date(fecha_hora))]
-
-tiempo.diario <- tiempo[, .(temperatura = mean(temperatura, na.rm = TRUE)), by = .(fecha = as.Date(fecha_hora))]
-tiempo.diario[, doy := yday(fecha)]
-tiempo.diario[, dif.temp.media := temperatura - mean(temperatura), by = doy]
-
-vehiculos.tiempo.diario[periodo == "Previo a restricciones"] %>%
-  merge(tiempo.diario[, .(fecha, dif.temp.media)], by = "fecha") %>%
-  ggplot(aes(x = dif.temp.dia, y = cantidad_pasos)) +
-  geom_point(alpha = 0.5) +
-  facet_wrap(condicion_dia~.) +
-  geom_smooth(method = "lm")
+tiempo.diario <- fread("Datos/Procesados/datos_diarios_tiempo_procesados.csv")
+vehiculos.tiempo.diario <- vehiculos.diario %>%
+  merge(tiempo.diario, by = 'fecha')
 
 #### Nitrogeno vs otras:
 
@@ -120,11 +105,6 @@ no2 <- fread("Datos/Procesados/no2_diario_procesado.csv")
 
 vehiculos.tiempo.no2 <- vehiculos.tiempo.diario %>%
   merge(no2, by = "fecha")
-
-vehiculos.tiempo.no2 %>%
-  ggplot(aes(x = cantidad_pasos, y = NO2_trop_mean, col = condicion_dia)) +
-  geom_point() +
-  facet_grid(periodo~pp)
 
 #Heatmap
 cantidad.pixeles <- 100
@@ -223,13 +203,14 @@ ggsave("Figuras/Descriptiva/Heatmap_vehiculos_temperatura_no2.png", heatmap.vehi
 # tests contra no2:
 cor.test(vehiculos.tiempo.no2$cantidad_pasos, vehiculos.tiempo.no2$NO2_trop_mean, method = "spearman")
 cor.test(vehiculos.tiempo.no2$temperatura, vehiculos.tiempo.no2$NO2_trop_mean, method = "spearman")
+cor.test(vehiculos.tiempo.no2$intensidad_viento_km_h, vehiculos.tiempo.no2$NO2_trop_mean, method = "spearman")
 
 
 #Creo lags y otras funciones y busco las correlaciones de spearman:
 
 funciones <- c("sqrt", "log10")
 
-variables.originales <- c("NO2_trop_mean", "cantidad_pasos", "temperatura")
+variables.originales <- c("NO2_trop_mean", "cantidad_pasos", "temperatura", "intensidad_viento_km_h", "temperatura.max", "temperatura.min")
 
 for(funcion in funciones){
   nuevas.variables <- paste(funcion, variables.originales, sep = "_")
@@ -296,7 +277,10 @@ dt.correlaciones[, conversion := fcase(grepl("sqrt", variable), "Raíz cuadrada"
 dt.correlaciones[, variable := gsub(paste(paste0(funciones, "_"), collapse = "|"), "", variable)]
 
 dt.correlaciones[, variable := fcase(variable == "cantidad_pasos", "Conteo vehicular diario",
-                                      variable == "temperatura", "Temperatura media diaria")]
+                                      variable == "temperatura", "Temperatura media diaria",
+                                     variable == "temperatura.max", "Temperatura máxima diaria",
+                                     variable == "temperatura.min", "Temperatura mínima diaria",
+                                     variable == "intensidad_viento_km_h", "Intensidad del viento (Km/H)")]
 
 
 etiquetas.grid <- list(
@@ -313,9 +297,13 @@ etiquetadora <- function(variable, value){
   return(etiquetas.grid[value])
 }
 
+dt.correlaciones[, label := fifelse(abs(spearman) == max(abs(spearman)), spearman, NA_real_), by = .(variable, target)]
+
 (plot.correlaciones <- dt.correlaciones %>%
                          ggplot(aes(x = lag, y = spearman, col = conversion)) +
                          geom_line() +
+                         geom_point(aes(y = label)) +
+                         geom_text(aes(label = stri_pad_right(as.character(label), 4, 0), y = label * 1.1), col = 'black', nudge_x = 0.5) +
                          geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.75) +
                          facet_grid(variable~target, scales = "free", labeller = etiquetadora)+
                          scale_color_brewer(palette = "Dark2") +
@@ -323,9 +311,17 @@ etiquetadora <- function(variable, value){
                          theme(legend.position = "top") +
                          labs(x = "Lag (días)", y = "Correlación de Pearson", col = "Conversión"))
 
-ggsave("Figuras/Descriptiva/correlaciones_no2.png", plot.correlaciones, width = 9, height = 9)
+ggsave("Figuras/Descriptiva/correlaciones_no2.png", plot.correlaciones, width = 9, height = 12)
 
 
-dt.correlaciones[variable == "Conteo vehicular diario",][abs(spearman) == max(abs(spearman)),]
+print("Mejores combinaciones:")
+dt.correlaciones[, mejor := abs(spearman) == max(abs(spearman)), by = .(variable, target, conversion)]
+dt.delivery <- dt.correlaciones[mejor == TRUE & conversion != 'Identidad' & target != 'NO2_trop_mean']
 
-dt.correlaciones[variable == "Temperatura media diaria",][abs(spearman) == max(abs(spearman)),]
+dt.delivery[, spearman_label := fifelse(abs(spearman) == max(abs(spearman)), paste0('\\textbf{', as.character(round(spearman, 3)), '}'), as.character(round(spearman, 3))),by = variable]
+dt.delivery[, target := gsub('sqrt_NO2_trop_mean', '$\\\\sqrt{NO_{2}}$', target)]
+dt.delivery[, target := gsub('log10_NO2_trop_mean', '$Log_{10}(NO_{2})$', target)]
+
+dt.delivery <- dcast(dt.delivery, variable + lag + conversion ~ target, value.var = "spearman_label")
+print(xtable(dt.delivery, type = "latex"), file = "Tablas/Descriptiva/correlaciones.tex", include.rownames=FALSE, , sanitize.colnames.function = identity, sanitize.text.function = identity)
+

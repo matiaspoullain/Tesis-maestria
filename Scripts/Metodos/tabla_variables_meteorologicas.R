@@ -7,17 +7,26 @@ nombre <- c("Temperatura Horaria (°C)",
             "Tiempo presente",
             "Temperatura Media Diaria (°C)",
             "Ocurrencia de Precipitaciones horaria",
-            "Ocurrencia de Precipitaciones diaria")
+            "Ocurrencia de Precipitaciones diaria",
+            "Dirección Cardinal del Viento",
+            "Intensidad del Viento horario (Km/h)",
+            "Intensidad del Viento diaria (Km/h)")
 
 abreviacion <- c("T\\textsubscript{h}",
                  "TP",
                  "T\\textsubscript{d}",
                  "OP\\textsubscript{h}",
-                 "OP\\textsubscript{d}")
+                 "OP\\textsubscript{d}",
+                 "", 
+                 "IV\\textsubscript{h}",
+                 "IV\\textsubscript{d}")
 
 resolucion <- c("Horaria",
                 "Horaria",
                 "Diaria",
+                "Horaria",
+                "Diaria",
+                "Horaria",
                 "Horaria",
                 "Diaria")
 
@@ -25,6 +34,9 @@ origen <- c("SMN",
             "SMN",
             "Calculada",
             "Calculada",
+            "Calculada",
+            "SMN",
+            "SMN",
             "Calculada")
 
 
