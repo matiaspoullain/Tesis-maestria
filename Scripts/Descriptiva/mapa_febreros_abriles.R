@@ -34,7 +34,7 @@ dt[, fecha := factor(fecha, levels = ..fechas %>%
 
 provincias <- st_read("Datos/Georreferenciados/Departamentos/pxdptodatosok.shp")
 
-bbox.shp <- st_read("Datos/Georreferenciados/bb_caba_buffer.geojson", crs = 'EPSG:4326')
+caba_buffer <- st_read("Datos/Georreferenciados/bb_caba_buffer.geojson", crs = 'EPSG:4326')
 
 mask <- st_read("Datos/Georreferenciados/mask/mask.geojson", crs = 4326)
 
@@ -45,7 +45,7 @@ leyenda <- expression(
 )
 
 
-(mapa_desciptivo <- ggplot() +
+mapa_desciptivo <- ggplot() +
     geom_raster(data = dt, aes(x = x, y = y, fill = columna)) +
     geom_sf(data = provincias, fill = "transparent") +
     geom_sf(data = mask, linetype = 'dashed', fill = 'transparent', linewidth = 1) +
@@ -61,10 +61,9 @@ leyenda <- expression(
     scale_x_continuous(labels = function(x) paste0(abs(x), "°O")) +
     labs(fill = leyenda)+
     theme(axis.title = element_blank()) +
-    #coord_sf(st_bbox(bbox.shp)[c(1,3)], st_bbox(bbox.shp)[c(2,4)]) +
-    coord_sf(c(min(dt$x), max(dt$x)),c(min(dt$y), max(dt$y)))+#, label_axes = "ENEN") +
+    coord_sf(c(st_bbox(caba_buffer)$xmin, st_bbox(caba_buffer)$xmax),c(st_bbox(caba_buffer)$ymin, st_bbox(caba_buffer)$ymax)) +
     facet_rep_wrap(fecha~., repeat.tick.labels = TRUE) +
     scale_fill_gradient2_tableau(palette = "Red-Green-Gold Diverging", trans = "reverse", labels = scientific) +
-    guides(fill = guide_colorbar(reverse=T)))
+    guides(fill = guide_colorbar(reverse=T))
 
 ggsave("Figuras/Descriptiva/mapa_febreros_abriles.png", mapa_desciptivo, width = 10, height = 8)
