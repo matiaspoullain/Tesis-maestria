@@ -85,9 +85,9 @@ datos.valores[, "area_value" := frollapply(value, 28, trapz, align = "right"), b
     scale_x_date(date_breaks = "3 months", date_labels = "%d %b %Y") +
     theme_bw()+
     theme(legend.position = "top") +
-    labs(x = "Fecha", y = expression(paste("Área debajo de la curva de la columna promedio de ", NO[2], " (", mu, "mol.día.", m^-2, ")")), fill = "Predicción", col = "Predicción"))
+    labs(x = "Fecha", y = expression(paste("Área debajo de la curva durante 28 días de la columna promedio de ", NO[2], " (", mu, "mol.día.", m^-2, ")")), fill = "Predicción", col = "Predicción"))
 
-ggsave("Figuras/Modelo_2/Mediamovil_area_bajo_curva_predicciones.png", plot.areas, width = 10, height = 6)
+ggsave("Figuras/Modelo_2/Mediamovil_area_bajo_curva_predicciones.png", plot.areas, width = 10, height = 7)
 
 
 

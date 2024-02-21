@@ -34,7 +34,13 @@ dt[, fecha := factor(fecha, levels = ..fechas %>%
 
 provincias <- st_read("Datos/Georreferenciados/Departamentos/pxdptodatosok.shp")
 
-bbox.shp <- st_read("Datos/Georreferenciados/bb_caba.geojson")
+bbox.shp <- st_read("Datos/Georreferenciados/bb_caba.geojson", crs = 'EPSG:4326') %>%
+  st_buffer(units::set_units(0.02, degree), endCapStyle = "SQUARE") %>%
+  st_bbox() %>%
+  st_as_sfc(crs = 'EPSG:4326') %>%
+  st_as_sf()
+
+mask <- st_read("Datos/Georreferenciados/mask/mask.geojson", crs = 4326)
 
 leyenda <- expression(
   atop(
@@ -46,6 +52,7 @@ leyenda <- expression(
 (mapa_desciptivo <- ggplot() +
     geom_raster(data = dt, aes(x = x, y = y, fill = columna)) +
     geom_sf(data = provincias, fill = "transparent") +
+    geom_sf(data = mask, linetype = 'dashed', fill = 'transparent', linewidth = 1) +
     theme_bw() +
     annotation_scale(
       location = "br",
