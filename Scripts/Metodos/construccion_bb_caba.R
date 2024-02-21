@@ -14,3 +14,10 @@ poly <- rectangulo.caba %>%
   st_as_sfc()
 
 st_write(poly, "Datos/Georreferenciados/bb_caba.geojson")
+
+poly_buffer <- poly %>%
+  st_buffer(units::set_units(0.2, degree), endCapStyle = "SQUARE") %>%
+  st_bbox() %>%
+  st_as_sfc(crs = 'EPSG:4326')
+
+st_write(poly, "Datos/Georreferenciados/bb_caba_buffer.geojson")

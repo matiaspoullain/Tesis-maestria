@@ -13,7 +13,7 @@ library(scales)
 provincias <- st_read("Datos/Georreferenciados/Departamentos/pxdptodatosok.shp")
 
 bbox.shp <- st_read("Datos/Georreferenciados/bb_caba.geojson", crs = 'EPSG:4326') %>%
-  st_buffer(units::set_units(0.02, degree), endCapStyle = "SQUARE") %>%
+  st_buffer(units::set_units(0.2, degree), endCapStyle = "SQUARE") %>%
   st_bbox() %>%
   st_as_sfc(crs = 'EPSG:4326') %>%
   st_as_sf()
