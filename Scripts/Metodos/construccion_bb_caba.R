@@ -20,4 +20,4 @@ poly_buffer <- poly %>%
   st_bbox() %>%
   st_as_sfc(crs = 'EPSG:4326')
 
-st_write(poly, "Datos/Georreferenciados/bb_caba_buffer.geojson")
+st_write(poly_buffer, "Datos/Georreferenciados/bb_caba_buffer.geojson")
