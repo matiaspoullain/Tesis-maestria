@@ -45,7 +45,7 @@ datos[, c("dia_de_semana",
           "dia_del_año",
           "dia_del_mes",
           "mes") := .(
-            wday(ds, week_start = 1),
+            lubridate::wday(ds, week_start = 1),
             yday(ds),
             mday(ds),
             month(ds)
