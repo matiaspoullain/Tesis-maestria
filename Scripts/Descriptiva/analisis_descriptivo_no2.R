@@ -77,7 +77,7 @@ ggsave("Figuras/Descriptiva/Boxplot_semanal_NO2.png", boxplot.semanal, width = 1
 library(ggfortify)
 #Diaria
 
-autocorrelacion.diaria <- acf(no2$NO2_trop_mean, lag.max = 500, pl=FALSE, na.action = na.pass)
+autocorrelacion.diaria <- acf(no2$NO2_trop_mean, lag.max = 28, pl=FALSE, na.action = na.pass)
 
 intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.diaria, ci.type = 'ma')
 

@@ -303,7 +303,7 @@ dt.correlaciones[, label := fifelse(abs(spearman) == max(abs(spearman)), spearma
                          ggplot(aes(x = lag, y = spearman, col = conversion)) +
                          geom_line() +
                          geom_point(aes(y = label)) +
-                         geom_text(aes(label = stri_pad_right(as.character(label), 4, 0), y = label * 1.1), col = 'black', nudge_x = 0.5) +
+                         geom_text(aes(label = stri_pad_right(as.character(round(label, 2)), 4, 0), y = label * 1.1), col = 'black', nudge_x = 0.5) +
                          geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.75) +
                          facet_grid(variable~target, scales = "free", labeller = etiquetadora)+
                          scale_color_brewer(palette = "Dark2") +

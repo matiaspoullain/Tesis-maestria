@@ -12,7 +12,7 @@ from datetime import timedelta
 # --------------------------------- Archivos --------------------------------- #
 archivo_input = 'Datos/Insumo_modelos/Modelo_2/prophet.csv'
 archivo_input_sin_restricciones = 'Datos/Resultados_modelos/Modelo_1/prediccion.csv'
-archivo_modelo = 'Modelos/Modelo_2/modelo.pkl'
+archivo_modelo = 'Modelos/Modelo_2/Prophet/modelo.pkl'
 
 carpeta_output = os.path.join('Datos', 'Resultados_modelos', 'Modelo_2', 'Prophet')
 archivo_predicciones = os.path.join(carpeta_output, 'prediccion.csv')
@@ -26,7 +26,7 @@ archivo_plot_componentes = os.path.join(carpeta_figuras, 'plot_componentes.png')
 os.makedirs(carpeta_figuras, exist_ok=True)
 
 # -------------------------------- Parametros -------------------------------- #
-df_optimizacion_directory = os.path.join('Modelos', 'Modelo_2')
+df_optimizacion_directory = os.path.join('Modelos', 'Modelo_2', 'Prophet')
 json_parametros_optimizados = os.path.join(df_optimizacion_directory, 'parametros_optimizados.json')
 with open(json_parametros_optimizados, 'r') as json_file:
     parametros = json.load(json_file)
