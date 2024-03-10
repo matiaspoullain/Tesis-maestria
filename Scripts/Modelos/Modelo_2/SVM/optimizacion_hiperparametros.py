@@ -30,7 +30,7 @@ datos = pd.get_dummies(datos, prefix=['holiday_dummy'], columns=['holiday'], dty
 datos = datos[~datos['heldout']]
 
 # --------------------- Obtener lista de indices para CV --------------------- #
-#Se maximiza la seleccion para entrenar con al menos un año y el maximo valor de prediccion a futuro. 3 semanas de heldout
+#Se maximiza la seleccion para entrenar siempre hasta el inicio de la cuarentena y el maximo valor de prediccion a futuro. 3 semanas de heldout
 datos['inv_index'] = range(len(datos)-1, -1, -1)
 lineas_disponibles_validacion = datos[datos['ds']>='2020-03-20'].shape[0]
 horizon = lineas_disponibles_validacion/timeseries_cv_folds
