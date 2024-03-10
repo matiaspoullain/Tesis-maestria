@@ -1,0 +1,1 @@
+{"subsample": 0.2577027507739822, "colsample_bytree": 0.871324551636337, "max_depth": 73, "min_child_weight": 0, "eta": 0.011642541164418372, "early_stopping_rounds": 479, "n_estimators": 10000}
