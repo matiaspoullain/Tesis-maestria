@@ -36,6 +36,13 @@ datos.valores <- cbind(lista.predicciones[['R']][, .(ds, NO2R = yhat)],
                        lista.predicciones[['SR']][, .(NO2SR = yhat)])
 
 
+#Comparacion dia a dia:
+datos.comparacion.dia <- copy(datos.valores)
+datos.comparacion.dia[, Q := NO2R / NO2SR]
+datos.comparacion.dia[, .(Q = mean(Q)), by = interaction(year(ds), month(ds))]
+
+
+
 datos.valores <- datos.valores %>%
   melt(id.vars = "ds")
 
