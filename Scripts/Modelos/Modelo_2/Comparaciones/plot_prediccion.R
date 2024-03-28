@@ -10,10 +10,11 @@ library(pracma)
 
 
 carpeta.archivos <- "Datos/Resultados_modelos/Modelo_2/"
-figura_comparacion_predicciones <- "Figuras/Modelo_2/Prediccion_m2"
+figura_comparacion_predicciones <- "Figuras/Modelo_2/Prediccion_m2.png"
 archivo.comparaciones <- file.path(carpeta.archivos, "General", "metricas.csv")
 comparaciones <- fread(archivo.comparaciones) 
 mejor.modelo <- comparaciones[variable == 'R2'][value == max(value), as.character(modelo)]
+archivo.observados <- "Datos/Insumo_modelos/Modelo_2/XGB.csv"
 
 
 
@@ -46,10 +47,10 @@ datos.comparacion.dia[, .(Q = mean(Q)), by = interaction(year(ds), month(ds))]
 datos.valores <- datos.valores %>%
   melt(id.vars = "ds")
 
-(plot.pred <- datos.valores %>%
+(plot.pred <- datos.valores[ds >= as.Date('2020-03-20')] %>%
   ggplot(aes(x = ds, y = value)) +
   geom_line(aes(col = variable)) +
-  geom_point(data = datos.obs, aes(y = y, fill = "Observados")) +
+  geom_point(data = datos.obs[ds >= as.Date('2020-03-20')], aes(y = y, fill = "Observados")) +
   theme_bw() +
   scale_color_manual(name = "",
                      labels = c(
@@ -106,52 +107,100 @@ datos.valores <- datos.valores %>%
   rbind(datos.valores[between(ds, as.Date("2020-03-20"), as.Date("2020-05-04"))] %>%
           mutate(periodo = "Periodo Represa et al."))
 
+#Leer valores observados
+observados <- fread(archivo.observados)
+observados <- observados[!is.na(y), .(ds, observados = 10**y)]
 
 #por periodo
-datos.proporciones.periodo <- datos.valores[, .(area_value = trapz(value)), by = .(variable, periodo)]
-datos.proporciones.periodo <- datos.proporciones.periodo[, .(prop = area_value[1]/area_value[2]), by = periodo]
-datos.proporciones.periodo <- datos.proporciones.periodo[, .(periodo, prop, comparacion = "Según restricciones")]
-print(paste("Proporción para el período utilizado por Represa et al: ", datos.proporciones.periodo[periodo == "Periodo Represa et al.", as.numeric(prop)]))
-datos.proporciones.periodo <- datos.proporciones.periodo[periodo == 'Durante las restricciones']
-datos.proporciones.periodo[, periodo := "Q promedio durante las restricciones"]
-datos.proporciones.periodo[, periodo := factor(periodo, levels = unique(periodo))]
+datos.proporciones.periodo <- dcast(datos.valores, ds + periodo ~ variable, value.var = "value")
+datos.proporciones.periodo <- datos.proporciones.periodo[!(is.na(NO2R) | is.na(NO2SR))]
+datos.proporciones.periodo <- merge(datos.proporciones.periodo, observados, by = 'ds')
+datos.proporciones.periodo <- datos.proporciones.periodo[, .(
+  NO2R_NO2SR = mean(NO2R / NO2SR),
+  observados_NO2R = mean(observados / NO2R),
+  observados_NO2SR = mean(observados / NO2SR)), by = periodo]
+
+#por mes
+datos.proporciones.mes <- dcast(datos.valores[periodo != "Periodo Represa et al."], ds + mes_anio ~ variable, value.var = "value")
+datos.proporciones.mes <- datos.proporciones.mes[!(is.na(NO2R) | is.na(NO2SR))]
+datos.proporciones.mes <- merge(datos.proporciones.mes, observados, by = 'ds')
+datos.proporciones.mes <- datos.proporciones.mes[, .(
+  NO2R_NO2SR = mean(NO2R / NO2SR),
+  observados_NO2R = mean(observados / NO2R),
+  observados_NO2SR = mean(observados / NO2SR)), by = mes_anio]
+
+
+#datos.proporciones.periodo <- datos.valores[, .(area_value = trapz(value)), by = .(variable, periodo)]
+#datos.proporciones.periodo <- datos.proporciones.periodo[, .(prop = area_value[1]/area_value[2]), by = periodo]
+#datos.proporciones.periodo <- datos.proporciones.periodo[, .(periodo, prop, comparacion = "Según restricciones")]
+#print(paste("Proporción para el período utilizado por Represa et al: ", datos.proporciones.periodo[periodo == "Periodo Represa et al.", as.numeric(prop)]))
+#datos.proporciones.periodo <- datos.proporciones.periodo[periodo == 'Durante las restricciones']
+#datos.proporciones.periodo[, periodo := "Q promedio durante las restricciones"]
+#datos.proporciones.periodo[, periodo := factor(periodo, levels = unique(periodo))]
 
 
 #por mes:
-datos.proporciones.mes <- datos.valores [ds >= as.Date('2020-03-01'), .(area_value = trapz(value)), by = .(variable, mes_anio)]
-datos.proporciones.mes <- datos.proporciones.mes[, .(prop = area_value[1]/area_value[2]), by = mes_anio]
-datos.proporciones.mes <- datos.proporciones.mes[, .(periodo = mes_anio, prop, comparacion = "Mensual")]
-datos.proporciones.mes[, periodo := factor(periodo, levels = unique(periodo))]
+#datos.proporciones.mes <- datos.valores [ds >= as.Date('2020-03-01'), .(area_value = trapz(value)), by = .(variable, mes_anio)]
+#datos.proporciones.mes <- datos.proporciones.mes[, .(prop = area_value[1]/area_value[2]), by = mes_anio]
+#datos.proporciones.mes <- datos.proporciones.mes[, .(periodo = mes_anio, prop, comparacion = "Mensual")]
+#datos.proporciones.mes[, periodo := factor(periodo, levels = unique(periodo))]
 
 archivo.mensual <- file.path(carpeta.archivos, 'General', 'Q_mesual.csv')
+archivo.periodo <- file.path(carpeta.archivos, 'General', 'Q_periodo.csv')
 
-fwrite(rbind(datos.proporciones.mes, datos.proporciones.periodo), archivo.mensual)
+fwrite(datos.proporciones.periodo, archivo.periodo)
+fwrite(datos.proporciones.mes, archivo.mensual)
 
-(plot.proporciones <- datos.proporciones.mes %>%
-    ggplot(aes(x = periodo, y = prop)) +
+datos.proporciones.periodo[periodo == 'Durante las restricciones', periodo := 'Q promedio durante las restricciones']
+
+(plot.proporciones <- datos.proporciones.mes[!(mes_anio %like% "2019"| mes_anio %like% "ene\\." | mes_anio %like% "feb\\.")] %>%
+    ggplot(aes(x = mes_anio, y = observados_NO2SR)) +
     geom_col(fill = "gray70") +
     geom_hline(yintercept = 1, linetype = "dashed", alpha = 0.75) +
-    geom_hline(data = datos.proporciones.periodo, aes(yintercept = prop, col = periodo)) +
+    geom_hline(data = datos.proporciones.periodo[periodo == 'Q promedio durante las restricciones'], aes(yintercept = observados_NO2SR, col = periodo)) +
     scale_color_manual(
       values = c( 
         "Q promedio durante las restricciones" = "#D95F02")) + ##1B9E77"
     theme_bw() +
     theme(legend.position = "top", axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.margin = unit(c(0,0,0,1), "cm")) +
-    labs(x = "Intervalo de tiempo", y = expression(Q == frac(Área(NO[2]~R), Área(NO[2]~SR))), col = ""))
+    labs(x = "Intervalo de tiempo", y = expression(Q == frac(NO[2]~Observado, NO[2]~SR)), col = ""))
 
 ggsave("Figuras/Modelo_2/Proporciones_area_bajo_curva_predicciones.png", plot.proporciones, width = 10, height = 6)
 
 
 
+#Boxplot
+datos.obs.pred <- merge(datos.valores, observados, by = 'ds')
+datos.box <- datos.obs.pred[periodo != "Periodo Represa et al." & variable == 'NO2SR']
+datos.box[, observados_NO2SR := observados / value]
+
+
+plot.boxplot <- datos.box[!(mes_anio %like% "2019"| mes_anio %like% "ene\\." | mes_anio %like% "feb\\.")] %>%
+  ggplot(aes(x = mes_anio, y = observados_NO2SR)) +
+  geom_boxplot(fill = "gray70") +
+  geom_hline(yintercept = 1, linetype = "dashed", alpha = 0.75) +
+  geom_hline(data = datos.proporciones.periodo[periodo == 'Q promedio durante las restricciones'], aes(yintercept = observados_NO2SR, col = periodo)) +
+  scale_color_manual(
+    values = c( 
+      "Q promedio durante las restricciones" = "#D95F02")) + ##1B9E77"
+  theme_bw() +
+  theme(legend.position = "top", axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.margin = unit(c(0,0,0,1), "cm")) +
+  labs(x = "Intervalo de tiempo", y = expression(Q == frac(NO[2]~Observado, NO[2]~SR)), col = "")
+
+ggsave("Figuras/Modelo_2/Boxplot_Q.png", plot.boxplot, width = 10, height = 6)
+
+
+
 # Observados vs predichos -------------------------------------------------
-datos.obs.pred <- merge(datos.valores, datos.obs, by = 'ds')
+
+
 
 plot.validacion <- datos.obs.pred[!is.na(y) & variable == 'NO2R'] %>%
   ggplot(aes(x = y, y = value)) +
   geom_point(alpha = 0.5, size = 0.75)+
   geom_abline(slope = 1, intercept = c(0, 0), linetype = "dashed") +
   theme_bw() +
-  scale_x_continuous(labels = scientific) +
+  scale_x_continuous(labels = scales::scientific) +
   labs(x = expression(paste("Observados (", mu, "mol.", m^-2, ")")), y = expression(paste("Predichos (", mu, "mol.", m^-2, ")")))
 
 ggsave("Figuras/Modelo_2/Validacion_m2.png", plot.validacion, width = 10, height = 6)
