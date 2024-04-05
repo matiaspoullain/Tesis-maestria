@@ -47,17 +47,17 @@ datos.comparacion.dia[, .(Q = mean(Q)), by = interaction(year(ds), month(ds))]
 datos.valores <- datos.valores %>%
   melt(id.vars = "ds")
 
-(plot.pred <- datos.valores[ds >= as.Date('2020-03-20')] %>%
+(plot.pred <- datos.valores[ds >= as.Date('2020-03-20') & variable == 'NO2SR'] %>%
   ggplot(aes(x = ds, y = value)) +
   geom_line(aes(col = variable)) +
-  geom_point(data = datos.obs[ds >= as.Date('2020-03-20')], aes(y = y, fill = "Observados")) +
+  geom_point(data = datos.obs[ds >= as.Date('2020-03-20')], aes(y = y, fill = "NO2 Observado")) +
   theme_bw() +
   scale_color_manual(name = "",
                      labels = c(
-                                expression(paste(NO[2], "R")),
+                                #expression(paste(NO[2], "R")),
                                 expression(paste(NO[2], "SR"))),
                      values = c( 
-                                "NO2R" = "#D95F02",
+                                #"NO2R" = "#D95F02",
                                 "NO2SR" = "#1B9E77")) +
   labs(
     x = "Fecha",
@@ -65,7 +65,7 @@ datos.valores <- datos.valores %>%
     fill = '') +
   theme(legend.position = "top") +
   geom_vline(xintercept = as.Date("2020-03-20"), linetype = "dashed", alpha = 0.8) +
-  scale_x_date(date_breaks = "3 months", labels = function(x) format(x, "%d %b %Y")))
+  scale_x_date(date_breaks = "1 months", labels = function(x) format(x, "%d %b %Y")))
 
 ggsave("Figuras/Modelo_2/Prediccion_m2.png", plot.pred, width = 10, height = 6)
 
@@ -153,6 +153,8 @@ fwrite(datos.proporciones.mes, archivo.mensual)
 
 datos.proporciones.periodo[periodo == 'Durante las restricciones', periodo := 'Q promedio durante las restricciones']
 
+datos.proporciones.mes[, mes_anio := factor(mes_anio, levels = datos.proporciones.mes$mes_anio)]
+
 (plot.proporciones <- datos.proporciones.mes[!(mes_anio %like% "2019"| mes_anio %like% "ene\\." | mes_anio %like% "feb\\.")] %>%
     ggplot(aes(x = mes_anio, y = observados_NO2SR)) +
     geom_col(fill = "gray70") +
@@ -173,19 +175,26 @@ ggsave("Figuras/Modelo_2/Proporciones_area_bajo_curva_predicciones.png", plot.pr
 datos.obs.pred <- merge(datos.valores, observados, by = 'ds')
 datos.box <- datos.obs.pred[periodo != "Periodo Represa et al." & variable == 'NO2SR']
 datos.box[, observados_NO2SR := observados / value]
+datos.box[, mes_anio := factor(mes_anio, levels = unique(datos.box$mes_anio))]
 
-
-plot.boxplot <- datos.box[!(mes_anio %like% "2019"| mes_anio %like% "ene\\." | mes_anio %like% "feb\\.")] %>%
+datos.box <- datos.box[!(mes_anio %like% "2019"| mes_anio %like% "ene\\." | mes_anio %like% "feb\\.")]
+(plot.boxplot <- datos.box  %>%
   ggplot(aes(x = mes_anio, y = observados_NO2SR)) +
   geom_boxplot(fill = "gray70") +
   geom_hline(yintercept = 1, linetype = "dashed", alpha = 0.75) +
   geom_hline(data = datos.proporciones.periodo[periodo == 'Q promedio durante las restricciones'], aes(yintercept = observados_NO2SR, col = periodo)) +
+  geom_point(data = datos.box[, .(observados_NO2SR = mean(observados_NO2SR), name = 'Q promedio'), by = mes_anio], aes(shape = name)) +
   scale_color_manual(
     values = c( 
       "Q promedio durante las restricciones" = "#D95F02")) + ##1B9E77"
+    scale_shape_manual(
+      values = c(
+        "Q promedio" = 17
+      )
+    ) +
   theme_bw() +
-  theme(legend.position = "top", axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.margin = unit(c(0,0,0,1), "cm")) +
-  labs(x = "Intervalo de tiempo", y = expression(Q == frac(NO[2]~Observado, NO[2]~SR)), col = "")
+  theme(legend.position = "top", axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.margin = unit(c(0,0,0,1), "cm"), legend.title=element_blank()) +
+  labs(x = "Intervalo de tiempo", y = expression(Q == frac(NO[2]~Observado, NO[2]~SR)), col = ""))
 
 ggsave("Figuras/Modelo_2/Boxplot_Q.png", plot.boxplot, width = 10, height = 6)
 
