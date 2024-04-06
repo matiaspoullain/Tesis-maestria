@@ -47,25 +47,34 @@ datos.comparacion.dia[, .(Q = mean(Q)), by = interaction(year(ds), month(ds))]
 datos.valores <- datos.valores %>%
   melt(id.vars = "ds")
 
-(plot.pred <- datos.valores[ds >= as.Date('2020-03-20') & variable == 'NO2SR'] %>%
-  ggplot(aes(x = ds, y = value)) +
-  geom_line(aes(col = variable)) +
-  geom_point(data = datos.obs[ds >= as.Date('2020-03-20')], aes(y = y, fill = "NO2 Observado")) +
-  theme_bw() +
-  scale_color_manual(name = "",
-                     labels = c(
-                                #expression(paste(NO[2], "R")),
-                                expression(paste(NO[2], "SR"))),
-                     values = c( 
-                                #"NO2R" = "#D95F02",
-                                "NO2SR" = "#1B9E77")) +
-  labs(
-    x = "Fecha",
-    y = expression(paste("Columna de ", NO[2], " troposférico (", mu, "mol.", m^-2, ")")),
-    fill = '') +
-  theme(legend.position = "top") +
-  geom_vline(xintercept = as.Date("2020-03-20"), linetype = "dashed", alpha = 0.8) +
-  scale_x_date(date_breaks = "1 months", labels = function(x) format(x, "%d %b %Y")))
+datos.plot.prediccion <- datos.valores %>%
+  rbind(datos.obs %>%
+          mutate(variable = 'NO2 Observado') %>%
+          rename(value = y))
+
+datos.plot.prediccion <- datos.plot.prediccion[ds >= as.Date('2020-03-20') & variable != 'NO2R' & !is.na(value)]
+
+(plot.pred <- datos.plot.prediccion %>%
+    ggplot(aes(x = ds, y = value, col = variable)) +
+    geom_line(alpha = 0.75) +
+    theme_bw() +
+    scale_color_manual(name = "",
+                       labels = c(
+                         #expression(paste(NO[2], "R")),
+                         'NO2 Observado',
+                         expression(paste(NO[2], "SR"))),
+                       values = c( 
+                         #"NO2R" = "#D95F02",
+                         'NO2 Observado' = 'black',
+                         "NO2SR" = "#1B9E77")) +
+    scale_linetype_manual(name = "", values = c("Incio restricciones" = "dashed")) +
+    labs(
+      x = "Fecha",
+      y = expression(paste("Columna de ", NO[2], " troposférico (", mu, "mol.", m^-2, ")")),
+      fill = '') +
+    theme(legend.position = "top") +
+    geom_vline(aes(xintercept = as.Date("2020-03-20"), linetype = "Incio restricciones"), alpha = 0.8) +
+    scale_x_date(date_breaks = "1 months", labels = function(x) format(x, "%d %b %Y")))
 
 ggsave("Figuras/Modelo_2/Prediccion_m2.png", plot.pred, width = 10, height = 6)
 
