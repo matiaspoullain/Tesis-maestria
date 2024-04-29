@@ -22,12 +22,21 @@ vehiculos.pred[, observados_predichos := observados / predichos]
 
 #Los junto
 dt <- merge(red.no2[, .(mes_anio, observados_NO2SR)], vehiculos.pred[, .(mes_anio, observados_predichos)], by = "mes_anio")
-dt[, c("Reducción estimada NO\\textsubscript{2} (%)", "Reducción estimada conteo vehicular (%)") :=
+dt[, c("Reducción estimada NO\\textsubscript{2} (\\%)", "Reducción estimada conteo vehicular (\\%)") :=
      .(round((1-observados_NO2SR) * 100, 2),
       round((1-observados_predichos) * 100, 2))
      ]
+
+meses <- c("ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sep.", "oct.", "nov.", "dic.")
+meses <- paste(meses, 2020)
+meses <- meses[meses %in% dt$mes_anio]
+dt[, mes_anio := factor(mes_anio, levels = c(meses))]
+dt <- dt %>%
+  arrange(mes_anio)
+
 dt <- dt[, -c("observados_NO2SR", "observados_predichos")] %>%
   rename("Mes y año" = mes_anio)
+
 
 print(xtable(dt, type = "latex"), file = "Tablas/Resultados/comparacion_reducciones_no2_vehiculos.tex", include.rownames=FALSE, , sanitize.colnames.function = identity, sanitize.text.function = identity)
 
