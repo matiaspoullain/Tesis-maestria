@@ -4,7 +4,7 @@ gc()
 ##### Analisis descriptivo vehiculos ####
 library(tidyverse)
 library(data.table)
-library(xlsx)
+library(openxlsx)
 library(ggpubr)
 
 
@@ -52,7 +52,9 @@ vehiculos %>%
     scale_color_brewer(palette = "Dark2") +
     scale_fill_brewer(palette = "Dark2") +
     theme_bw()+
-    theme(legend.position = "top"))
+    theme(legend.position = "top",
+          axis.text=element_text(size=12),
+          axis.title=element_text(size=14)))
 
 ggsave("Figuras/Descriptiva/Histograma_mes.png", plot.hist.mes, width = 5, height = 10)
 
@@ -65,7 +67,9 @@ vehiculos[, id_semana := paste0(week(fecha_hora), "_", year(fecha_hora), "_", pe
   geom_boxplot(alpha = 0.8) +
   scale_fill_brewer(palette = "Dark2") +
   theme_bw()+
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
   labs(x = "Fecha", y = "Cantidad de vehículos contados por hora", fill = "Período"))
   
 ggsave("Figuras/Descriptiva/Boxplot_semana.png", boxplot.semana, width = 9, height = 5)
@@ -96,7 +100,9 @@ vehiculos %>%
   scale_fill_brewer(palette = "Dark2") +
   scale_color_brewer(palette = "Dark2") +
   theme_bw()+
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
   labs(x = "Día de la semana", y = "Cantidad de vehículos contados por hora", fill = "Período", col = "Período"))
 
 ggsave("Figuras/Descriptiva/Linea_semanal.png", plot.variacion.semanal, width = 9, height = 5)
@@ -125,7 +131,9 @@ vehiculos %>%
   scale_fill_brewer(palette = "Dark2") +
   scale_color_brewer(palette = "Dark2") +
   theme_bw()+
-  theme(legend.position = "none") +
+  theme(legend.position = "none",
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
   labs(x = "Hora del día", y = "Cantidad de vehículos contados por hora", fill = "Período", col = "Período"))
 
 ggsave("Figuras/Descriptiva/Linea_horaria.png", plot.horario, width = 8, height = 4)
@@ -158,6 +166,8 @@ intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.horaria, ci.type 
                        geom_point(col = palette.colors(1, "Dark2")) +
                        geom_hline(yintercept = 0, linetype = "dashed") +
                        theme_bw()+
+                       theme(axis.text=element_text(size=12),
+                             axis.title=element_text(size=14))+
                        labs(x = "Lag (Horas)"))
 
 ggsave("Figuras/Descriptiva/Autocorrelograma_vehiculos_horaria.png", plot.acf.horaria, width = 8, height = 4)

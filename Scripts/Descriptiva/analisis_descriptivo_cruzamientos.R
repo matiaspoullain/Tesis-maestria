@@ -90,7 +90,11 @@ vehiculos.tiempo.heatmap %>%
   scale_x_continuous(breaks = seq(1, cantidad.pixeles, length.out = num.ticks), labels = round(seq(range(vehiculos.tiempo$temperatura)[1], range(vehiculos.tiempo$temperatura)[2], length.out = num.ticks))) +
   scale_y_continuous(breaks = seq(1, cantidad.pixeles, length.out = num.ticks), labels = round(seq(range(vehiculos.tiempo$cantidad_pasos)[1], range(vehiculos.tiempo$cantidad_pasos)[2], length.out = num.ticks))) +
   labs(x = "Temperatura (°C)", y = "Cantidad de vehículos contados por hora", fill = "Frecuencia") +
-  theme_bw()
+  theme_bw() +
+  theme(axis.text=element_text(size=14),
+        axis.title=element_text(size=16),
+        legend.text=element_text(size=14),
+        legend.title=element_text(size=16))
 
 
 #Lo mismo pero diario:
@@ -149,7 +153,11 @@ vehiculos.tiempo.no2.heatmap %>%
   scale_x_continuous(breaks = seq(1, cantidad.pixeles, length.out = num.ticks), labels = round(seq(range(vehiculos.tiempo.no2$temperatura)[1], range(vehiculos.tiempo.no2$temperatura)[2], length.out = num.ticks))) +
   scale_y_continuous(breaks = seq(1, cantidad.pixeles, length.out = num.ticks), labels = round(seq(range(vehiculos.tiempo.no2$cantidad_pasos)[1], range(vehiculos.tiempo.no2$cantidad_pasos)[2], length.out = num.ticks))) +
   labs(x = "Temperatura media diaria (°C)", y = "Cantidad de vehículos contados por día", fill = expression(paste("Concentración promedio de ", NO[2], " troposférico (", mu, "mol.", m^-2, ")"))) +
-  theme_bw()
+  theme_bw() +
+  theme(axis.text=element_text(size=14),
+        axis.title=element_text(size=16),
+        legend.text=element_text(size=14),
+        legend.title=element_text(size=16))
 
 #Sin agrupar:
 cantidad.pixeles <- 10
@@ -196,7 +204,12 @@ leyenda <- expression(
   labs(x = "Intervalos de temperatura media diaria (°C)", y = "Intervalos de cantidad de vehículos contados por día", fill = leyenda) +
   theme_bw() +
     guides(fill = guide_colorbar(reverse=T)) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)))
+    theme(axis.text=element_text(size=14),
+          axis.title=element_text(size=16),
+          legend.text=element_text(size=14),
+          legend.title=element_text(size=16),
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+  )
 
 ggsave("Figuras/Descriptiva/Heatmap_vehiculos_temperatura_no2.png", heatmap.vehiculos.temperatura.no2, width = 10, height = 6)
 
@@ -299,17 +312,26 @@ etiquetadora <- function(variable, value){
 
 dt.correlaciones[, label := fifelse(abs(spearman) == max(abs(spearman)), spearman, NA_real_), by = .(variable, target)]
 
+significant_values_format <- function(x, significant_values){
+  formatC(signif(round(x,significant_values), digits=significant_values+1), format = "fg", digits = significant_values, flag="#")
+}
+
+
 (plot.correlaciones <- dt.correlaciones %>%
                          ggplot(aes(x = lag, y = spearman, col = conversion)) +
                          geom_line() +
                          geom_point(aes(y = label)) +
-                         geom_text(aes(label = stri_pad_right(as.character(label), 4, 0), y = label * 1.1), col = 'black', nudge_x = 0.5) +
+                         geom_text(aes(label = significant_values_format(label, 2), y = label * 1.1), col = 'black', nudge_x = 0.5) +
                          geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.75) +
                          facet_grid(variable~target, scales = "free", labeller = etiquetadora)+
                          scale_color_brewer(palette = "Dark2") +
                          theme_bw()+
-                         theme(legend.position = "top") +
-                         labs(x = "Lag (días)", y = "Correlación de Pearson", col = "Conversión"))
+                         theme(legend.position = "top", 
+                               axis.text=element_text(size=14),
+                               axis.title=element_text(size=16),
+                               legend.text=element_text(size=14),
+                               legend.title=element_text(size=16)) +
+                         labs(x = "Lag (días)", y = "Correlación de Spearman", col = "Conversión"))
 
 ggsave("Figuras/Descriptiva/correlaciones_no2.png", plot.correlaciones, width = 9, height = 12)
 

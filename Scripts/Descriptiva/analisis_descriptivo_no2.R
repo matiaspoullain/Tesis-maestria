@@ -19,7 +19,11 @@ no2 <- fread("Datos/Procesados/no2_diario_procesado.csv")
     scale_x_date(breaks = date_breaks("4 month")) +
   theme_bw()+
     geom_vline(xintercept = as.Date("2020-03-20"), alpha = 0.3, linetype = "dashed")+
-    labs(x = "Fecha", y = expression(paste("Concentración promedio de ", NO[2], " troposférico (", mu, "mol.", m^-2, ")")), fill = "Período", col = "Período"))
+    labs(x = "Fecha", y = expression(paste("Concentración promedio de ", NO[2], " troposférico (", mu, "mol.", m^-2, ")")), fill = "Período", col = "Período") +
+    theme(axis.text=element_text(size=14),
+          axis.title=element_text(size=16),
+          legend.text=element_text(size=14),
+          legend.title=element_text(size=16)))
 
 ggsave("Figuras/Descriptiva/Linea_NO2.png", plot.no2, width = 12, height = 6)
 
@@ -42,7 +46,11 @@ no2[, c("periodo", "dia_semana") := .(fifelse(fecha < as.Date("2020-03-20"), "Pr
     scale_fill_brewer(palette = "Dark2") +
     scale_color_brewer(palette = "Dark2") +
     theme_bw()+
-    theme(legend.position = "top") +
+    theme(legend.position = "top",
+          axis.text=element_text(size=14),
+          axis.title=element_text(size=16),
+          legend.text=element_text(size=14),
+          legend.title=element_text(size=16)) +
     labs(x = "Día de la semana", y = "Cantidad de vehículos contados por hora", fill = "Período", col = "Período"))
 
 
@@ -56,7 +64,11 @@ no2[, c("periodo", "dia_semana") := .(fifelse(fecha < as.Date("2020-03-20"), "Pr
     scale_fill_brewer(palette = "Dark2") +
     scale_color_brewer(palette = "Dark2") +
     theme_bw()+
-    theme(legend.position = "top") +
+    theme(legend.position = "top",
+          axis.text=element_text(size=14),
+          axis.title=element_text(size=16),
+          legend.text=element_text(size=14),
+          legend.title=element_text(size=16)) +
     labs(x = "Día de la semana", y = "Cantidad de vehículos contados por hora", fill = "Período", col = "Período"))
 
 
@@ -66,7 +78,11 @@ no2[, c("periodo", "dia_semana") := .(fifelse(fecha < as.Date("2020-03-20"), "Pr
   geom_boxplot() +
   scale_fill_brewer(palette = "Dark2") +
   theme_bw()+
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text=element_text(size=14),
+        axis.title=element_text(size=16),
+        legend.text=element_text(size=14),
+        legend.title=element_text(size=16)) +
   labs(x = "Día de la semana", y = expression(paste("Concentración promedio de ", NO[2], " troposférico (", mu, "mol.", m^-2, ")")), fill = "Período"))
 
 
@@ -90,6 +106,10 @@ intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.diaria, ci.type =
     geom_point(col = palette.colors(1, "Dark2")) +
     geom_hline(yintercept = 0, linetype = "dashed") +
     theme_bw()+
+    theme(axis.text=element_text(size=14),
+          axis.title=element_text(size=16),
+          legend.text=element_text(size=14),
+          legend.title=element_text(size=16)) +
     labs(x = "Lag (Días)"))
 
 ggsave("Figuras/Descriptiva/Autocorrelograma_no2_diaria.png", plot.acf.diaria, width = 8, height = 4)
@@ -114,6 +134,10 @@ intervalo.confianza <- ggfortify:::confint.acf(autocorrelacion.semanal, ci.type 
     geom_point(col = palette.colors(1, "Dark2")) +
     geom_hline(yintercept = 0, linetype = "dashed") +
     theme_bw() +
+    theme(axis.text=element_text(size=14),
+          axis.title=element_text(size=16),
+          legend.text=element_text(size=14),
+          legend.title=element_text(size=16)) +
     labs(x = "Lag (Semanas)") +
     scale_x_continuous(breaks = seq(0, 150, 10)))
 
