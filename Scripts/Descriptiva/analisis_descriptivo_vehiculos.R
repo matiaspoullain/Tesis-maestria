@@ -13,7 +13,7 @@ vehiculos <- fread("Datos/Procesados/conteo_vehicular.csv")
 feriados <- fread("Datos/feriados.csv", encoding = "UTF-8")
 
 # Total periodos:
-vehiculos[, periodo := fifelse(fecha_hora < as.Date("2020-03-20"), "Previo a restricciones", "Durante las restricciones") %>%
+vehiculos[, periodo := fifelse(between(fecha_hora, as.Date("2020-03-20"), as.Date("2020-11-05")), "Con restricciones", "Sin restricciones") %>%
             as.factor() %>%
             fct_rev()]
 
