@@ -4,7 +4,7 @@ library(tidyverse)
 library(data.table)
 
 
-datos <- fread("Datos/df_prophet_prediccion.csv")
+datos <- fread("Datos/Resultados_modelos/Modelo_1/df_prophet_prediccion.csv")
 
 plot.validacion <- datos %>%
   ggplot(aes(x = y, y = yhat, ymin = yhat_lower, ymax = yhat_upper)) +
@@ -12,6 +12,6 @@ plot.validacion <- datos %>%
   geom_errorbar(alpha = 0.01, width = 0.01) +
   geom_abline(slope = 1, intercept = c(0, 0), linetype = "dashed", col = "#D95F02") +
   theme_bw() +
-  labs(x = "Observados (vehículos/hora)", y = "Predichos (vehículos/hora)")
+  labs(x = "Observados (vehículos/hora)", y = "Estimados (vehículos/hora)")
 
 ggsave("Figuras/Modelo_1/Validacion_m1.png", width = 10, height = 6)
