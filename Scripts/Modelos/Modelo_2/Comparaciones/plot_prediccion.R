@@ -213,13 +213,13 @@ ggsave("Figuras/Modelo_2/Boxplot_Q.png", plot.boxplot, width = 10, height = 6)
 
 
 
-plot.validacion <- datos.obs.pred[!is.na(y) & variable == 'NO2R'] %>%
-  ggplot(aes(x = y, y = value)) +
+plot.validacion <- datos.obs.pred[!is.na(observados) & variable == 'NO2R'] %>%
+  ggplot(aes(x = observados, y = value)) +
   geom_point(alpha = 0.5, size = 0.75)+
   geom_abline(slope = 1, intercept = c(0, 0), linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::scientific) +
-  labs(x = expression(paste("Observados (", mu, "mol.", m^-2, ")")), y = expression(paste("Predichos (", mu, "mol.", m^-2, ")")))
+  labs(x = expression(paste("Observados (", mu, "mol.", m^-2, ")")), y = expression(paste("Estimados (", mu, "mol.", m^-2, ")")))
 
 ggsave("Figuras/Modelo_2/Validacion_m2.png", plot.validacion, width = 10, height = 6)
 
